@@ -1,0 +1,17 @@
+- id: heelercli-auto
+  name: heelercli (auto-install)
+  description: Install (or use cached install) and use heelercli to scan for secrets in all staged changes.
+  entry: heelercli-pre-commit-auto.sh
+  language: script
+  pass_filenames: false
+  stages: [pre-commit]
+
+- id: heelercli
+  name: heelercli
+  description: Uses a locally installed heelercli to scan for secrets in all staged changes.
+  entry: heelercli
+  language: system
+  args: ["secrets", "--pre-commit"]
+  pass_filenames: false
+  types: [file]
+  stages: [pre-commit]

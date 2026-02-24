@@ -1,6 +1,6 @@
-# Heeler Security CLI (pre-commit hooks)
+# Heeler Security CLI
 
-This repository hosts the release artifacts for `heelercli` and provides pre-commit hooks to block secrets before they land in git history. Today the CLI focuses on secret scanning with validation; dependency and SAST scanning are on the roadmap.
+This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning plus dependency vulnerability and SBOM workflows for Go and Java (Maven), with additional language support coming soon.
 
 ## Quick start (recommended)
 
@@ -34,7 +34,7 @@ This runs:
 heelercli secrets --pre-commit
 ```
 
-## CLI options
+## Secrets command options
 
 ```text
 heelercli secrets [flags]
@@ -47,7 +47,7 @@ heelercli secrets [flags]
 
 Exit behavior: `heelercli` returns `0` when no failing secrets are found, and non-zero otherwise. Failing secrets are determined by `--fail-on` and `--only-validated`.
 
-## Examples
+## Secrets examples
 
 Scan the repo but exclude build output and vendored code:
 
@@ -66,6 +66,92 @@ Show only validated findings (reduces noise):
 ```bash
 heelercli secrets --only-validated
 ```
+
+## Dependency security commands (vulnerability + SBOM)
+
+The Go `heeler-cli` includes dependency analysis commands that are now available in `heelercli` releases as well.
+
+### Vulnerability scan
+
+Use `vulnerabilities` to auto-discover dependency manifests, generate SBOMs, submit them to Heeler, and evaluate policy-based failures.
+
+```bash
+heelercli vulnerabilities [flags]
+```
+
+Important flags:
+
+- `--fail-on-any`: fail if any vulnerability is found.
+- `--fail-on-severity critical,high`: fail on selected severities.
+- `--fail-on-id CVE-2024-1234,GHSA-xxxx-yyyy-zzzz`: fail on specific IDs.
+- `--exclude-dir path/to/dir`: exclude directories from manifest/SBOM detection (repeatable).
+- `--baseline <path>` and `--new-findings-only`: only fail on findings not present in a baseline report.
+- `--format detailed|table|json|sarif` and `--output <path>`: control output format and destination.
+
+Examples:
+
+```bash
+# fail on critical/high only
+heelercli vulnerabilities --fail-on-severity critical,high
+
+# regression mode in CI (new issues only)
+heelercli vulnerabilities --baseline .heeler-baseline-vulns.json --new-findings-only
+```
+
+### SBOM assessment
+
+Use `assess-sbom` to assess an existing CycloneDX JSON SBOM file.
+
+```bash
+heelercli assess-sbom --sbom ./sbom.json [flags]
+```
+
+Important flags:
+
+- `--sbom <path>`: path to a CycloneDX JSON SBOM file.
+- `--format detailed|table|json|sarif`: choose output format.
+- `--output <path>`: write output to file.
+
+Notes:
+
+- `--sbom_file` is deprecated; use `--sbom`.
+
+### SBOM download (platform SBOM)
+
+```bash
+# exactly one of the two flags is required
+heelercli download-sbom --service_id <id>
+heelercli download-sbom --application_id <id>
+```
+
+## Current limitations and prerequisites
+
+- Dependency detection for vulnerability/SBOM workflows currently supports Go and Java (Maven projects).
+- Go detection scans `go.mod` files and requires a working Go toolchain (`go`) on the machine running the CLI.
+- Java detection scans `pom.xml` files and requires Maven (`mvn`) and a usable Java toolchain on the machine running the CLI.
+- If required toolchains are missing, SBOM generation for that manifest fails and those results are incomplete.
+
+## Login and API key flow
+
+`heelercli` authenticates to Heeler using a Heeler API key (Bearer token).
+
+```bash
+# save base URL only
+heelercli login https://app.heeler.com
+
+# save base URL and validate/save API key
+heelercli login https://app.heeler.com <HEELER_API_KEY>
+```
+
+What this does:
+
+- Saves config to your user config path (for example `~/.config/heeler/config.json` on Linux/macOS).
+- Stores the Heeler base URL and optional API key in that config file.
+- When an API key is provided to `login`, the CLI validates it before saving.
+
+Environment override:
+
+- `HEELER_API_KEY` can be set in the environment and takes precedence over the config-file API key.
 
 ## Configuration
 

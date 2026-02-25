@@ -4,6 +4,7 @@ set -euo pipefail
 
 REPO="Heeler-Security/heelercli"
 CACHE_DIR="${HEELERCLI_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/heelercli}"
+BIN_EXT=""
 HEELERCLI_BIN="$CACHE_DIR/heelercli"
 VERSION_FILE="$CACHE_DIR/.version"
 
@@ -15,8 +16,9 @@ get_platform() {
   arch="$(uname -m)"
 
   case "$os" in
-    Linux)  platform="linux" ;;
-    Darwin) platform="darwin" ;;
+    Linux)               platform="linux" ;;
+    Darwin)              platform="darwin" ;;
+    MINGW*|MSYS*|CYGWIN*) platform="windows" ;;
     *) echo "Error: Unsupported OS '$os'" >&2; exit 1 ;;
   esac
 
@@ -32,7 +34,11 @@ get_platform() {
 download_heelercli() {
   local platform="$1"
   local version="$2"
+
   local ext="tgz"
+  if [[ "$platform" == windows-* ]]; then
+    ext="zip"
+  fi
 
   local asset_name="heelercli-${platform}.${ext}"
   local download_url
@@ -55,8 +61,17 @@ download_heelercli() {
     exit 1
   fi
 
-  tar -C "$tmpdir" -xzf "$tmpdir/$asset_name"
-  local binary_name="heelercli"
+  local binary_name="heelercli${BIN_EXT}"
+
+  if [[ "$ext" == "zip" ]]; then
+    if ! command -v unzip &>/dev/null; then
+      echo "Error: 'unzip' is required on Windows but was not found. Install Git for Windows or add unzip to PATH." >&2
+      exit 1
+    fi
+    unzip -o -q "$tmpdir/$asset_name" -d "$tmpdir"
+  else
+    tar -C "$tmpdir" -xzf "$tmpdir/$asset_name"
+  fi
 
   if [[ ! -f "$tmpdir/$binary_name" ]]; then
     echo "Error: Binary not found in downloaded archive" >&2
@@ -104,6 +119,12 @@ needs_download() {
 main() {
   local platform
   platform="$(get_platform)"
+
+  # Set Windows-specific binary extension and path
+  if [[ "$platform" == windows-* ]]; then
+    BIN_EXT=".exe"
+    HEELERCLI_BIN="$CACHE_DIR/heelercli.exe"
+  fi
 
   if needs_download; then
     download_heelercli "$platform" "$EXPECTED_VERSION"

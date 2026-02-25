@@ -16,6 +16,15 @@ repos:
 
 This hook downloads the correct `heelercli` binary for your OS/arch on first run and reuses the cached binary on subsequent runs. It scans all staged changes for secrets and fails the commit when a secret is detected.
 
+### Windows support
+
+The auto-install hook works on Windows when run inside [Git for Windows](https://gitforwindows.org/) (Git Bash). Git Bash provides the POSIX shell environment (`bash`, `curl`, `unzip`) that the hook requires.
+
+Prerequisites:
+- **Git for Windows** (includes Git Bash, which is also used by most `pre-commit` installations on Windows).
+
+No additional configuration is needed. The hook detects Windows automatically and downloads the `.zip` release artifact.
+
 ## Using a locally installed CLI
 
 If you already install `heelercli` separately, use the system hook:
@@ -124,6 +133,14 @@ heelercli download-sbom --service_id <id>
 heelercli download-sbom --application_id <id>
 ```
 
+## Supported platforms
+
+| OS | Architecture | Archive format |
+|----|-------------|----------------|
+| Linux | amd64, arm64 | `.tgz` |
+| macOS | arm64 | `.tgz` |
+| Windows | amd64 | `.zip` |
+
 ## Current limitations and prerequisites
 
 - Dependency detection for vulnerability/SBOM workflows currently supports Go and Java (Maven projects).
@@ -145,7 +162,7 @@ heelercli login https://app.heeler.com <HEELER_API_KEY>
 
 What this does:
 
-- Saves config to your user config path (for example `~/.config/heeler/config.json` on Linux/macOS).
+- Saves config to your user config path (for example `~/.config/heeler/config.json` on Linux/macOS, or `%AppData%\heeler\config.json` on Windows).
 - Stores the Heeler base URL and optional API key in that config file.
 - When an API key is provided to `login`, the CLI validates it before saving.
 
@@ -449,6 +466,54 @@ Release artifacts are published on GitHub Releases for the `heelercli` project. 
 ```
 https://github.com/Heeler-Security/heelercli/releases
 ```
+
+## Verifying downloaded binaries
+
+Each release includes `.sha256` checksum files and `.bundle` cosign signature files alongside every binary archive. You can use these to verify that your download is authentic and untampered.
+
+### Checksum verification
+
+Download the archive and its matching `.sha256` file, then run:
+
+**Linux:**
+
+```bash
+sha256sum -c heelercli-linux-amd64.tgz.sha256
+```
+
+**macOS:**
+
+```bash
+shasum -a 256 -c heelercli-darwin-arm64.tgz.sha256
+```
+
+**Windows (Git Bash):**
+
+```bash
+sha256sum -c heelercli-windows-amd64.zip.sha256
+```
+
+**Windows (PowerShell):**
+
+```powershell
+$expected = (Get-Content heelercli-windows-amd64.zip.sha256).Split(" ")[0]
+$actual = (Get-FileHash heelercli-windows-amd64.zip -Algorithm SHA256).Hash.ToLower()
+if ($actual -eq $expected) { "OK" } else { "MISMATCH" }
+```
+
+### Signature verification
+
+Signature verification uses [cosign](https://docs.sigstore.dev/cosign/system_config/installation/) and confirms the binary was built by the official CI pipeline. Download the archive and its matching `.bundle` file, then run:
+
+```bash
+cosign verify-blob \
+  --bundle heelercli-linux-amd64.tgz.bundle \
+  --certificate-identity "https://github.com/heelerai/heeler-cli/.github/workflows/release.yml@refs/tags/*" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  heelercli-linux-amd64.tgz
+```
+
+Replace the file names with the archive and bundle for your platform. The `--certificate-identity` pattern matches the source repository workflow, confirming the binary was produced by an official release build.
 
 ## Support
 

@@ -1,6 +1,6 @@
 # Heeler Security CLI
 
-This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning plus dependency vulnerability and SBOM workflows for Go and Java (Maven), with additional language support coming soon.
+This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning plus dependency vulnerability and SBOM workflows for Go, Java (Maven), JavaScript/TypeScript (pnpm, package.json, package-lock.json) with additional language support coming soon.
 
 ## Quick start (recommended)
 
@@ -143,7 +143,7 @@ heelercli download-sbom --application_id <id>
 
 ## Current limitations and prerequisites
 
-- Dependency detection for vulnerability/SBOM workflows currently supports Go and Java (Maven projects).
+- Dependency detection for vulnerability/SBOM workflows currently supports Go, Java (Maven projects), JavaScript/TypeScript (pnpm, npm).
 - Go detection scans `go.mod` files and requires a working Go toolchain (`go`) on the machine running the CLI.
 - Java detection scans `pom.xml` files and requires Maven (`mvn`) and a usable Java toolchain on the machine running the CLI.
 - If required toolchains are missing, SBOM generation for that manifest fails and those results are incomplete.

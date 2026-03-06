@@ -178,6 +178,38 @@ The auto-install hook supports a few environment variables:
 - `HEELERCLI_CACHE_DIR`: Override the cache directory for the downloaded binary.
 - `XDG_CACHE_HOME`: Used when `HEELERCLI_CACHE_DIR` is not set.
 
+## Agent skills
+
+This repository includes security-focused agent skills under `.agents/skills/` for workflows like:
+
+- secrets scanning
+- vulnerability scanning
+- license checks
+- full scan orchestration
+- repository security review
+
+### Use skills from this repository directly
+
+If you are running an agent from within this repository, skills are discovered from `.agents/skills/`.
+
+### Install skills into another repository with dotagents
+
+You can install these skills into other projects using [dotagents](https://github.com/getsentry/dotagents):
+
+```bash
+npx @sentry/dotagents init
+npx @sentry/dotagents add Heeler-Security/heelercli --all
+npx @sentry/dotagents install
+```
+
+Install selected skills only:
+
+```bash
+npx @sentry/dotagents add Heeler-Security/heelercli heeler-security-review heeler-scan-all
+```
+
+For reproducible installs in CI, use `npx @sentry/dotagents install --frozen`.
+
 ## What it scans
 
 The secret scanner inspects staged diffs, common secret formats, and validates where possible to reduce false positives. Support is growing quickly; the list below reflects current coverage.

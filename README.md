@@ -1,6 +1,6 @@
 # Heeler Security CLI
 
-This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning plus dependency vulnerability and SBOM workflows for Go, Java (Maven), JavaScript/TypeScript (pnpm, package.json, package-lock.json) with additional language support coming soon.
+This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning plus dependency vulnerability and SBOM workflows for Go, Java (Maven), JavaScript/TypeScript (pnpm, package.json, package-lock.json), and Python (uv, Poetry, Pipenv, requirements files).
 
 ## Quick start (recommended)
 
@@ -80,6 +80,24 @@ heelercli secrets --only-validated
 
 The Go `heeler-cli` includes dependency analysis commands that are now available in `heelercli` releases as well.
 
+### Python dependency support
+
+Python manifests/lockfiles currently supported:
+
+- `uv.lock` (uv)
+- `poetry.lock` (Poetry)
+- `Pipfile.lock` (Pipenv)
+- `requirements*.txt` (pip requirements files, including nested `-r` includes)
+
+Selection priority per project directory:
+
+- `uv.lock`
+- `poetry.lock`
+- `Pipfile.lock`
+- `requirements*.txt`
+
+If multiple Python manifest types exist in one directory, only the highest-priority type is used for that directory.
+
 ### Vulnerability scan
 
 Use `vulnerabilities` to auto-discover dependency manifests, generate SBOMs, submit them to Heeler, and evaluate policy-based failures.
@@ -143,9 +161,13 @@ heelercli download-sbom --application_id <id>
 
 ## Current limitations and prerequisites
 
-- Dependency detection for vulnerability/SBOM workflows currently supports Go, Java (Maven projects), JavaScript/TypeScript (pnpm, npm).
+- Dependency detection for vulnerability/SBOM workflows currently supports Go, Java (Maven projects), JavaScript/TypeScript (pnpm, npm), and Python (uv, Poetry, Pipenv, requirements files).
 - Go detection scans `go.mod` files and requires a working Go toolchain (`go`) on the machine running the CLI.
 - Java detection scans `pom.xml` files and requires Maven (`mvn`) and a usable Java toolchain on the machine running the CLI.
+- Python dependency graph generation is best-effort and depends on lockfile completeness and local tools.
+- For `uv.lock`, graph edges are generated from parsed lock data. If parsing fails, the CLI falls back to `uv export`, which recovers components but may not include dependency edges.
+- For `Pipfile.lock`, graph edges are taken from lockfile metadata when present. If missing, the CLI attempts `pipenv graph --json-tree`; if unavailable/failing, output may be component-only.
+- For `requirements*.txt`, pinned packages (`==`) are always collected as components. For unpinned requirements, the CLI attempts `python -m pip install --dry-run --report` (with a temporary virtualenv fallback) to resolve versions and graph edges; if resolution fails, output falls back to pinned components only.
 - If required toolchains are missing, SBOM generation for that manifest fails and those results are incomplete.
 
 ## Login and API key flow

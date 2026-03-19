@@ -23,12 +23,14 @@ Use this skill for license discovery and compliance-oriented reporting.
 
 ```text
 heelercli licenses [flags]
+heelercli licenses valid [flags]
 ```
 
 Important flags:
 
 - `--format detailed|table|json|sarif|llm`
 - `-q, --quiet`
+- `licenses valid --llm-output`
 
 ## Heelercli preflight (required)
 
@@ -41,18 +43,21 @@ Before running license commands:
 3. If command output indicates auth is missing/expired/invalid, stop and return auth fix instructions before retrying.
 
 ## Workflow
-
 1. Run `heelercli licenses --format llm -q` from the repository root.
-2. If license metadata is missing, use available license-fetch options from `heelercli licenses --help` and rerun with `--format llm -q`.
-3. Build a package list with name + version + license.
-4. Normalize licenses to SPDX-style identifiers where possible.
-5. Compare against allow/deny policy (if provided).
-6. Report package-to-license mapping and policy violations.
+2. Get explicit valid-license set:
+   - run `heelercli licenses valid --llm-output -q [--config <path>] [--profile <name>]`.
+   - treat this as the canonical `allowed_licenses` set for recommendation decisions.
+3. Compare against effective allow/deny policy and the `allowed_licenses` set.
+4. Determine failing licenses:
+   - treat licenses outside the valid-license set as failing (invalid)
+   - do not fail on unknown licenses; report them separately for review
+5. For failing packages, propose remediation in this order:
+   - provide 1-3 functionally similar package alternatives in the same ecosystem with likely compliant licenses.
+6. Report package-to-license mapping, policy violations, and recommended compliant alternatives.
 
 ## Policy and decision rules
 
 - If a license policy is explicitly defined (allowlist/denylist/restricted list), enforce it for pass/fail.
-- If no policy is defined, do not treat "no obvious issue" as a hard pass/fail gate.
 - Without policy, prefer stronger OSS license posture by prioritizing permissive licenses (for example MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC).
 - Without policy, call out license risks explicitly, including:
   - strong copyleft and network copyleft (GPL-*, AGPL-*)
@@ -62,15 +67,22 @@ Before running license commands:
 
 ## Policy defaults (if user does not provide one)
 
-- Flag strong copyleft for manual review (AGPL-3.0, GPL-3.0).
-- Flag unknown/no-license entries.
-- Do not auto-fail permissive licenses (MIT, Apache-2.0, BSD-*).
-- Prioritize remediation in this order: unknown/no-license first, then AGPL/GPL, then other restricted licenses.
+- Fail on licenses not in the valid-license set (invalid) when policy is defined.
+- Do not fail on unknown/no-license entries; flag for review.
+- Prioritize remediation in this order: invalid licenses first, then AGPL/GPL, then other restricted licenses.
+
+## Centralized policy integration
+
+- Prefer policy from config files provided through global flags: `--config` and `--profile`.
+- The `licenses` command supports direct policy inputs (`--ok`, `--fail-on`, `--unknown-license-policy`) when no central config is present.
+- Use `heelercli licenses valid --llm-output` to fetch the effective valid-license list directly in LLM-friendly form.
+- Use `heelercli policy explain` for broader policy context; use `licenses valid` as source of truth for allowed-license checks.
 
 ## Output style
 
 - Provide: package, version, detected license, source of truth, confidence.
-- Separate "confirmed violations" from "unknown or needs review".
-- Include a short remediation list (replace, exception, legal review).
+- Separate "confirmed violations" (invalid) from "unknown or needs review".
+- Include a short remediation list (alternative package, exception, legal review).
 - Explicitly label result as either `policy-gated` or `advisory`.
 - In advisory mode, include a "preferred alternatives" note when risky licenses are present.
+- When proposing alternatives, include: package ecosystem, similarity rationale (one line), and compliance status against `allowed_licenses`.

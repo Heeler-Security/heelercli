@@ -42,6 +42,10 @@ If dependency additions/upgrades are detected, this skill MUST also invoke:
 
 - `heeler-recommended-version`
 
+If dependency additions/upgrades are detected, this skill SHOULD also invoke:
+
+- `heeler-malicious-package-scan`
+
 Use it to provide explicit package-version guidance for newly added or upgraded dependencies by running:
 
 - `heelercli get-recommended-version <package-name> --package-ecosystem <ecosystem>`
@@ -101,7 +105,7 @@ Execution mode requirements for subskills:
    - Evaluate exfiltration controls for code, reports, and credentials.
 
 8. Optional supplemental Heeler commands (when available)
-   - Run `heelercli detect-malicious-packages --format llm -q` and include any flagged packages.
+   - Prefer invoking `heeler-malicious-package-scan`; if unavailable, run `heelercli detect-malicious-packages --format llm -q` and include any flagged packages.
    - If an SBOM is present, run `heelercli assess-sbom --sbom <path> --format llm -q`.
 
 ## False-positive guardrails
@@ -169,6 +173,7 @@ For each `CRITICAL` and `HIGH` finding, include:
   - `heeler-secrets-scan`: command(s), result, pass/fail, notable findings
   - `heeler-vulnerabilities-scan`: command(s), result, policy-gated pass/fail or advisory, notable findings
   - `heeler-license-check`: command(s), result, policy-gated pass/fail or advisory, notable findings
+  - `heeler-malicious-package-scan` (when dependencies are in scope): command(s), result, policy-gated pass/fail or advisory, notable findings
   - `heeler-recommended-version` (when dependency changes exist): per-package command(s) including ecosystem, recommended version(s), rationale
 - Findings by category:
   - Secrets

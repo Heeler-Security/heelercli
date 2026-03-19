@@ -143,6 +143,20 @@ Notes:
 
 - `--sbom_file` is deprecated; use `--sbom`.
 
+### License checks
+
+Use `licenses` to scan discovered dependencies for license risk and policy violations.
+
+```bash
+heelercli licenses --format llm -q
+```
+
+Use `licenses valid` to print the effective allowed SPDX license set (config/profile first, backend defaults fallback):
+
+```bash
+heelercli licenses valid --llm-output -q
+```
+
 ### SBOM download (platform SBOM)
 
 ```bash
@@ -207,6 +221,7 @@ This repository includes security-focused agent skills under `.agents/skills/` f
 - secrets scanning
 - vulnerability scanning
 - license checks
+- malicious package scanning
 - full scan orchestration
 - repository security review
 

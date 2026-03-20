@@ -16,6 +16,8 @@ repos:
 
 This hook downloads the correct `heelercli` binary for your OS/arch on first run and reuses the cached binary on subsequent runs. It scans all staged changes for secrets and fails the commit when a secret is detected.
 
+macOS note: only `arm64` binaries are published. On Apple Silicon, run your terminal natively (not under Rosetta), or the hook will fail with a clear error.
+
 ### Windows support
 
 The auto-install hook works on Windows when run inside [Git for Windows](https://gitforwindows.org/) (Git Bash). Git Bash provides the POSIX shell environment (`bash`, `curl`, `unzip`) that the hook requires.
@@ -42,6 +44,12 @@ This runs:
 ```bash
 heelercli secrets --pre-commit
 ```
+
+You can also override hook behavior with environment variables:
+
+- `HEELERCLI_FULL_SECRETS_SCAN=1` forces full-repository scan mode.
+- `HEELERCLI_SECRETS_ONLY_VALIDATED=1` adds `--only-validated` to the secrets scan.
+- `HEELERCLI_SECRETS_MODE=pre-commit|full` selects scan mode explicitly.
 
 ## Secrets command options
 

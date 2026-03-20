@@ -1,6 +1,6 @@
 # Heeler Security CLI
 
-This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning plus dependency vulnerability and SBOM workflows for Go, Java (Maven), JavaScript/TypeScript (pnpm, package.json, package-lock.json), and Python (uv, Poetry, Pipenv, requirements files).
+This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning plus dependency vulnerability, license, and SBOM workflows for C#/.NET (NuGet), Go, Java (Maven), JavaScript/TypeScript (npm + pnpm), PHP (Composer), Python (uv, Poetry, Pipenv, requirements files), Ruby (RubyGems/Bundler), and Rust (Cargo).
 
 ## Quick start (recommended)
 
@@ -175,9 +175,10 @@ heelercli download-sbom --application_id <id>
 
 ## Current limitations and prerequisites
 
-- Dependency detection for vulnerability/SBOM workflows currently supports Go, Java (Maven projects), JavaScript/TypeScript (pnpm, npm), and Python (uv, Poetry, Pipenv, requirements files).
+- Dependency detection for vulnerability, license, and SBOM workflows currently supports C#/.NET (NuGet), Go, Java (Maven), JavaScript/TypeScript (npm + pnpm), PHP (Composer), Python (uv, Poetry, Pipenv, requirements files), Ruby (RubyGems/Bundler), and Rust (Cargo).
 - Go detection scans `go.mod` files and requires a working Go toolchain (`go`) on the machine running the CLI.
 - Java detection scans `pom.xml` files and requires Maven (`mvn`) and a usable Java toolchain on the machine running the CLI.
+- Additional ecosystems may require local package toolchains when lockfiles alone are not sufficient (for example `dotnet`, `npm`/`pnpm`, `composer`, `bundle`, and `cargo`).
 - Python dependency graph generation is best-effort and depends on lockfile completeness and local tools.
 - For `uv.lock`, graph edges are generated from parsed lock data. If parsing fails, the CLI falls back to `uv export`, which recovers components but may not include dependency edges.
 - For `Pipfile.lock`, graph edges are taken from lockfile metadata when present. If missing, the CLI attempts `pipenv graph --json-tree`; if unavailable/failing, output may be component-only.

@@ -1,15 +1,15 @@
 ---
 name: heeler-recommended-version
-description: Determine the recommended dependency version for a package ecosystem. Use when users ask what version of a package they should install or upgrade to.
+description: Determine the recommended dependency version for a package ecosystem. Use when installing a new dependency/updating a dependency or users ask what version of a dependency they should install or upgrade to.
 ---
 
 # Heeler Recommended Version
 
-Use this skill to answer dependency version-selection questions for third-party packages.
+Use this skill to answer dependency version-selection questions for third-party packages (especially when installing or updating to new versions).
 
 ## When to use
 
-- User asks what version of a dependency package to install.
+- User asks what version of a dependency to install.
 - User asks whether a dependency should be upgraded and to which version.
 - Dependency additions/upgrades are detected and version guidance is needed.
 

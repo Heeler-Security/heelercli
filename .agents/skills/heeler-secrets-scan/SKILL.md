@@ -1,6 +1,6 @@
 ---
 name: heeler-secrets-scan
-description: Run Heeler secret scanning for a repository or staged changes. Use when the user asks to detect, validate, or gate on exposed secrets, tokens, credentials, or API keys.
+description: Run Heeler secret scanning for a repository or staged changes. Use when comitting code or the user asks to detect, validate, or gate on exposed secrets, tokens, credentials, or API keys.
 ---
 
 # Heeler Secrets Scan

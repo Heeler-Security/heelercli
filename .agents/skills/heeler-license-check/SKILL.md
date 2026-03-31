@@ -1,6 +1,6 @@
 ---
 name: heeler-license-check
-description: Perform dependency license checks and fetch missing license data for packages. Use when users ask for OSS license compliance, prohibited license detection, or license inventory generation.
+description: Perform dependency license checks and fetch missing license data for packages. Use when a new dependency is installed or when a user asks for OSS license compliance, prohibited license detection, or license inventory generation.
 ---
 
 # Heeler License Check

@@ -1,6 +1,6 @@
 ---
 name: heeler-malicious-package-scan
-description: Detect suspicious or malicious dependencies using Heeler package-risk intelligence. Use when users ask about typosquatting, malware in dependencies, or supply-chain package risk.
+description: Detect suspicious or malicious dependencies using Heeler package-risk intelligence. Use when a new dependency is installed or users ask about typosquatting, malware in dependencies, or supply-chain package risk.
 ---
 
 # Heeler Malicious Package Scan

@@ -95,7 +95,7 @@ download_heelercli() {
   mkdir -p "$CACHE_DIR"
   local tmpdir
   tmpdir="$(mktemp -d)"
-  trap 'rm -rf "$tmpdir"' EXIT
+  trap "rm -rf '$tmpdir'" EXIT
 
   echo "Downloading heelercli ($version) for $platform..." >&2
 
@@ -213,10 +213,10 @@ main() {
   fi
 
   if $full_scan; then
-    exec "$HEELERCLI_BIN" secrets "${secrets_args[@]}" . "${forward_args[@]}"
+    exec "$HEELERCLI_BIN" secrets ${secrets_args[@]+"${secrets_args[@]}"} . ${forward_args[@]+"${forward_args[@]}"}
   fi
 
-  exec "$HEELERCLI_BIN" secrets --pre-commit "${secrets_args[@]}" . "${forward_args[@]}"
+  exec "$HEELERCLI_BIN" secrets --pre-commit ${secrets_args[@]+"${secrets_args[@]}"} . ${forward_args[@]+"${forward_args[@]}"}
 }
 
 main "$@"

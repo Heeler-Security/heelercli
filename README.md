@@ -1,6 +1,6 @@
 # Heeler Security CLI
 
-This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning plus dependency vulnerability, license, and SBOM workflows for C#/.NET (NuGet), Go, Java (Maven), JavaScript/TypeScript (npm + pnpm), PHP (Composer), Python (uv, Poetry, Pipenv, requirements files), Ruby (RubyGems/Bundler), and Rust (Cargo).
+This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning and source-code static analysis (SAST), plus dependency vulnerability, license, and SBOM workflows for C#/.NET (NuGet), Go, Java (Maven), JavaScript/TypeScript (npm + pnpm), PHP (Composer), Python (uv, Poetry, Pipenv, requirements files), Ruby (RubyGems/Bundler), and Rust (Cargo).
 
 ## Quick start (recommended)
 
@@ -172,6 +172,37 @@ heelercli licenses valid --llm-output -q
 heelercli download-sbom --service_id <id>
 heelercli download-sbom --application_id <id>
 ```
+
+## Source code scanning (SAST)
+
+Use `sast` to run Heeler's static analysis over the current repository locally and report code-security findings (injection, taint data-flows, insecure configuration, and more). The scan engine is downloaded on demand for a logged-in user, checksum- and signature-verified, then cached; new engine versions roll out without a CLI upgrade.
+
+```bash
+heelercli sast [flags]
+```
+
+Important flags:
+
+- `--fail-on critical,high,medium,low,info`: severities that fail the command (empty fails on any finding).
+- `--sca`: also run software composition analysis (dependency CVEs) as part of the scan.
+- `--repo-profile`: include repository profiling in the scan.
+- `--exclude "<glob>"` / `--exclude-dir <path>`: exclude directories (glob patterns or paths, repeatable).
+- `--timeout <duration>`: maximum scan runtime before timing out (default `10m`).
+- `--format detailed|table|json|sarif` and `--output <path>`: control output format and destination.
+
+Exit behavior: `heelercli` returns `0` when no failing findings are found, and non-zero otherwise. Findings are ordered most-severe-first; failing findings are determined by `--fail-on`.
+
+Examples:
+
+```bash
+# fail the build on critical/high code findings
+heelercli sast --fail-on critical,high
+
+# SARIF for code-scanning upload, excluding generated code
+heelercli sast --format sarif --output sast.sarif --exclude-dir generated
+```
+
+Requires a logged-in user (`heelercli login`); the scan engine is fetched from Heeler on first use.
 
 ## Supported platforms
 

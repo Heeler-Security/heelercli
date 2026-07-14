@@ -184,7 +184,6 @@ heelercli sast [flags]
 Important flags:
 
 - `--fail-on critical,high,medium,low,info`: severities that fail the command (empty fails on any finding).
-- `--sca`: also run software composition analysis (dependency CVEs) as part of the scan.
 - `--repo-profile`: include repository profiling in the scan.
 - `--exclude "<glob>"` / `--exclude-dir <path>`: exclude directories (glob patterns or paths, repeatable).
 - `--timeout <duration>`: maximum scan runtime before timing out (default `10m`).

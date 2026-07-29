@@ -56,13 +56,18 @@ You can also override hook behavior with environment variables:
 ```text
 heelercli secrets [flags]
 
-  --exclude strings   (repeatable) directories to exclude as glob patterns (similar to .gitignore)
-  --fail-on strings   comma-separated list of types to fail on
-  --only-validated    filter to only show validated items
-  --pre-commit        enable pre-commit mode
+  --exclude strings       (repeatable) directories to exclude as glob patterns (similar to .gitignore)
+  --exclude-dir strings   (repeatable) directory paths to exclude from scanning
+  --fail-on strings       comma-separated list of types to fail on
+  --only-validated        filter to only show validated items
+  --path string           directory to scan (defaults to the enclosing git repository, or the current directory outside git)
+  --pre-commit            enable pre-commit mode
+  --timeout duration      maximum runtime for secrets scan before timing out (default 5m0s)
 ```
 
 Exit behavior: `heelercli` returns `0` when no failing secrets are found, and non-zero otherwise. Failing secrets are determined by `--fail-on` and `--only-validated`.
+
+Git is optional: outside a git repository the current directory is scanned as-is (SVN checkouts, exported tarballs, plain directories), and the resolved scan root is printed to stderr. Scans cover the whole resolved root even when run from a subdirectory, so use `--path` to target a specific directory. `--pre-commit` still requires a git repository, since staged-file scanning has no meaning without one. Requires `heelercli` 1.0.17 or newer.
 
 ## Secrets examples
 
@@ -175,7 +180,7 @@ heelercli download-sbom --application_id <id>
 
 ## Source code scanning (SAST)
 
-Use `sast` to run Heeler's static analysis over the current repository locally and report code-security findings (injection, taint data-flows, insecure configuration, and more). The scan engine is downloaded on demand for a logged-in user, checksum- and signature-verified, then cached; new engine versions roll out without a CLI upgrade.
+Use `sast` to run Heeler's static analysis over the current repository or directory locally and report code-security findings (injection, taint data-flows, insecure configuration, and more). The scan engine is downloaded on demand for a logged-in user, checksum- and signature-verified, then cached; new engine versions roll out without a CLI upgrade.
 
 ```bash
 heelercli sast [flags]
@@ -186,10 +191,13 @@ Important flags:
 - `--fail-on critical,high,medium,low,info`: severities that fail the command (empty fails on any finding).
 - `--repo-profile`: include repository profiling in the scan.
 - `--exclude "<glob>"` / `--exclude-dir <path>`: exclude directories (glob patterns or paths, repeatable).
+- `--path <dir>`: directory to scan (defaults to the enclosing git repository, or the current directory outside git).
 - `--timeout <duration>`: maximum scan runtime before timing out (default `10m`).
 - `--format detailed|table|json|sarif` and `--output <path>`: control output format and destination.
 
 Exit behavior: `heelercli` returns `0` when no failing findings are found, and non-zero otherwise. Findings are ordered most-severe-first; failing findings are determined by `--fail-on`.
+
+Git is optional: outside a git repository the current directory is scanned as-is, and the resolved scan root is printed to stderr. Use `--path` to target a specific directory. Requires `heelercli` 1.0.17 or newer.
 
 Examples:
 

@@ -583,6 +583,8 @@ Release artifacts are published on GitHub Releases for the `heelercli` project. 
 https://github.com/Heeler-Security/heelercli/releases
 ```
 
+The hook verifies each downloaded archive against its published `.sha256` sidecar before installing it, and refuses to install on a mismatch.
+
 ## Verifying downloaded binaries
 
 Each release includes `.sha256` checksum files and `.bundle` cosign signature files alongside every binary archive. You can use these to verify that your download is authentic and untampered.

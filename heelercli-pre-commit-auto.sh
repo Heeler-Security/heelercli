@@ -17,6 +17,14 @@ is_truthy() {
   esac
 }
 
+compute_sha256() {
+  if command -v sha256sum &>/dev/null; then
+    sha256sum "$1" | awk '{print $1}'
+  elif command -v shasum &>/dev/null; then
+    shasum -a 256 "$1" | awk '{print $1}'
+  fi
+}
+
 get_platform() {
   local os arch
   os="$(uname -s)"
@@ -103,6 +111,33 @@ download_heelercli() {
     echo "Error: Failed to download $download_url" >&2
     exit 1
   fi
+
+  local sha_url="${download_url}.sha256"
+  if ! curl -fLsS "$sha_url" -o "$tmpdir/${asset_name}.sha256"; then
+    echo "Error: Failed to download checksum file $sha_url" >&2
+    exit 1
+  fi
+
+  # Compare digests directly instead of `sha256sum -c`: sidecars on older
+  # releases embed a build path in the filename field, which -c would
+  # resolve literally and fail on even for a good download.
+  local expected_sha actual_sha
+  expected_sha="$(awk 'NR==1{print $1}' "$tmpdir/${asset_name}.sha256")"
+  actual_sha="$(compute_sha256 "$tmpdir/$asset_name")"
+
+  if [[ ! "$expected_sha" =~ ^[0-9a-f]{64}$ ]]; then
+    echo "Error: Malformed checksum file $sha_url" >&2
+    exit 1
+  fi
+  if [[ -z "$actual_sha" ]]; then
+    echo "Error: Neither sha256sum nor shasum is available to verify the download." >&2
+    exit 1
+  fi
+  if [[ "$expected_sha" != "$actual_sha" ]]; then
+    echo "Error: Checksum mismatch for $asset_name (expected $expected_sha, got $actual_sha). Refusing to install." >&2
+    exit 1
+  fi
+  echo "Checksum verified for $asset_name" >&2
 
   local binary_name="heelercli${BIN_EXT}"
 

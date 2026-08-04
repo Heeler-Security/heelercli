@@ -39,7 +39,7 @@ get_platform() {
     if [[ "$proc_translated" == "1" ]]; then
       cat >&2 <<'EOF'
 Error: Detected a Rosetta-translated shell on Apple Silicon.
-The auto-install hook cannot use darwin-amd64 because only darwin-arm64 builds are published.
+Use a native arm64 terminal so the hook installs the native arm64 build.
 
 Open a native arm64 terminal and run pre-commit again.
 Examples:
@@ -51,8 +51,8 @@ EOF
 
     if [[ "$arm64_capable" == "1" ]]; then
       cat >&2 <<'EOF'
-Error: This appears to be Apple Silicon running an x86_64 shell.
-The auto-install hook cannot use darwin-amd64 because only darwin-arm64 builds are published.
+Error: Detected an x86_64 shell on Apple Silicon.
+Use a native arm64 terminal so the hook installs the native arm64 build.
 
 Open a native arm64 terminal and run pre-commit again.
 EOF
@@ -68,13 +68,7 @@ EOF
   esac
 
   case "$arch" in
-    x86_64|amd64)
-      if [[ "$platform" == "darwin" ]]; then
-        echo "Error: macOS amd64 (darwin-amd64) is not supported by published heelercli binaries." >&2
-        exit 1
-      fi
-      arch_suffix="amd64"
-      ;;
+    x86_64|amd64)  arch_suffix="amd64" ;;
     arm64|aarch64) arch_suffix="arm64" ;;
     *) echo "Error: Unsupported architecture '$arch'" >&2; exit 1 ;;
   esac

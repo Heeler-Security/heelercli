@@ -16,7 +16,9 @@ repos:
 
 This hook downloads the correct `heelercli` binary for your OS/arch on first run and reuses the cached binary on subsequent runs. It scans all staged changes for secrets and fails the commit when a secret is detected.
 
-macOS note: only `arm64` binaries are published. On Apple Silicon, run your terminal natively (not under Rosetta), or the hook will fail with a clear error.
+macOS note: both `arm64` (Apple Silicon) and `amd64` (Intel, since 1.0.14) binaries are published. On Apple Silicon, run your terminal natively (not under Rosetta), or the hook will fail with a clear error.
+
+Intel-Mac support in the auto-install hook requires both a `rev:` at a release tag that contains the hook's Intel support (the `rev` pins the hook script itself, so tags up to and including 1.0.17 still refuse to run on Intel) and a binary release of 1.0.14 or later. The latter only matters if you pin `HEELERCLI_VERSION` to an older tag, where the download simply fails with the hook's usual error.
 
 ### Windows support
 
@@ -216,7 +218,7 @@ Requires a logged-in user (`heelercli login`); the scan engine is fetched from H
 | OS | Architecture | Archive format |
 |----|-------------|----------------|
 | Linux | amd64, arm64 | `.tgz` |
-| macOS | arm64 | `.tgz` |
+| macOS | amd64, arm64 | `.tgz` |
 | Windows | amd64 | `.zip` |
 
 ## Current limitations and prerequisites
@@ -626,12 +628,18 @@ Signature verification uses [cosign](https://docs.sigstore.dev/cosign/system_con
 ```bash
 cosign verify-blob \
   --bundle heelercli-linux-amd64.tgz.bundle \
-  --certificate-identity "https://github.com/heelerai/heeler-cli/.github/workflows/release.yml@refs/tags/*" \
+  --certificate-identity-regexp '^https://github\.com/heelerai/heeler-cli/\.github/workflows/release\.yml@refs/tags/.*$' \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
   heelercli-linux-amd64.tgz
 ```
 
-Replace the file names with the archive and bundle for your platform. The `--certificate-identity` pattern matches the source repository workflow, confirming the binary was produced by an official release build.
+Replace the file names with the archive and bundle for your platform. The `--certificate-identity-regexp` pattern matches the source repository workflow for any release tag, confirming the binary was produced by an official release build.
+
+To pin verification to one exact release instead, use `--certificate-identity` with the full tag. It is an exact string match, not a pattern, so no wildcard is accepted:
+
+```bash
+  --certificate-identity "https://github.com/heelerai/heeler-cli/.github/workflows/release.yml@refs/tags/1.0.17"
+```
 
 ## Support
 

@@ -49,17 +49,28 @@ Before running recommendation commands:
 
 - The command requires exactly one positional argument: `<package-name>`.
 - The `--package-ecosystem` flag is required for each invocation.
-- Ecosystem should be explicit and use canonical lowercase values when possible: `maven`, `pypi`, `npm`, `go`, `nuget`, `rubygems`, `composer`, `cargo` (or `default` when applicable).
+- Ecosystem must be one of: `maven`, `pypi`, `npm`, `go`, `nuget`, `rubygems`, `composer`, `cargo`. Parsing is case-insensitive; prefer canonical lowercase in generated commands.
 - Parsing is case-insensitive, but prefer canonical lowercase values in generated commands and examples.
 - The recommendation is package/ecosystem-aware and based on Heeler platform heuristics (including usage and active vulnerabilities).
 - Do not substitute this with GitHub latest-release checks.
 - If package identity is ambiguous (same name across ecosystems), resolve with repository context first and ask only if still ambiguous.
 - Do not use this skill to recommend `heelercli` release tags for pre-commit hook pinning.
 
+## Failure handling
+
+- `404`: the package was not found in that ecosystem. The status cannot distinguish
+  "no such package" from "published under a different ecosystem", so check both before
+  reporting a cause - do not guess one.
+- `422`: the ecosystem value is not accepted. Re-issue with one of the values listed above.
+- `401`/`403`: authentication problem. Check the stored login or `HEELER_API_KEY`.
+
+Report the failure and the check the user should make. Do not substitute a version from
+memory or from a registry lookup when the platform has not returned one.
+
 ## Command reference
 
 ```text
-heelercli get-recommended-version <package-name> --package-ecosystem <ecosystem> [--format detailed|json] [--output <file>]
+heelercli get-recommended-version <package-name> --package-ecosystem <ecosystem> [--format detailed|json|llm] [--output <file>]
 ```
 
 ## Ecosystem mapping hints

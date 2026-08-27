@@ -1,6 +1,6 @@
 ---
 name: heeler-scan-all
-description: Run a complete security scan workflow with Heeler: secrets, vulnerabilities, and license checks. Use when the user asks for a single "full scan" or "scan everything" pass.
+description: Run a complete Heeler security scan in one pass - secrets, dependency vulnerabilities, licenses, and malicious packages. Use when the user asks for a single 'full scan', 'scan everything', or a pre-release security gate.
 ---
 
 # Heeler Scan All

@@ -78,6 +78,15 @@ Execution mode requirements for subskills:
    - Prioritize `critical` + `ACTIVE` findings that are network-accessible and reachable from real entry points.
 
 3. Application-layer SSRF and outbound request abuse
+   - Seed this section with static analysis before reading code by hand:
+     `heelercli sast --format json -q`. It covers taint and heuristic findings plus IaC
+     misconfiguration (Terraform/OpenTofu, CloudFormation, Kubernetes, Pulumi).
+     - Treat its findings as **input, not conclusions**. The evidence requirements below
+       still apply to each one: a scanner reports a sink, it does not establish that
+       attacker-controlled data reaches it or that the target is reachable.
+     - `sast` downloads its engine on first use and needs a logged-in user. If it cannot
+       run, say so under "Areas not reviewed" and continue the manual trace - do not skip
+       this section.
    - Check whether attacker-controlled input can influence outbound URLs, hosts, ports, or protocols.
    - Review common sinks (`fetch`/HTTP clients, webhook dispatchers, URL-based SDK loaders, server-side file/URL fetch utilities).
    - For each suspected SSRF path, verify entry point -> propagation -> outbound sink -> reachable internal target.

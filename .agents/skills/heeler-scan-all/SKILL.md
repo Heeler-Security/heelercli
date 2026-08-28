@@ -26,11 +26,33 @@ Before running any scan in this workflow:
 
 ## Workflow
 
-1. Run secrets scan first and capture findings + exit code: `heelercli secrets -q`.
-2. Run vulnerability scan second with requested fail policy: `heelercli vulnerabilities --format llm -q`.
-3. Run license check third and classify policy violations: `heelercli licenses --format llm -q`.
-4. Run malicious package scan: `heelercli detect-malicious-packages --format llm -q`.
-5. Produce a consolidated report with all executed sections and overall pass/fail.
+1. Get the reconciled counts and the overall verdict in one pass:
+
+   ```
+   heelercli ci --checks vulnerabilities,licenses,malicious-packages,secrets --format llm -q
+   ```
+
+   `ci` generates the SBOM once and reuses it across the dependency checks, so this is
+   the cheapest way to learn what each check found and whether anything violated policy.
+   Its per-check summary lines are the source of truth for the counts in Section A-D.
+
+2. Run detail passes only for the sections that need more than a count. `ci` reports
+   status, violations and a summary per check - it does not return CVE identifiers, CVSS
+   vectors, exploitability, license rows or secret detail, all of which this skill's
+   output contract requires:
+
+   - `heelercli vulnerabilities --format llm -q` - for top CVEs, CVSS and exploitability.
+   - `heelercli licenses --format llm -q` - for the package-to-license mapping.
+   - `heelercli detect-malicious-packages --format llm -q` - for flagged packages.
+   - `heelercli secrets -q` - for per-finding paths and validation status.
+
+   Skip any detail pass whose `ci` check reported nothing of interest, and say in the
+   report that it was skipped for that reason.
+
+3. Reconcile: if a detail pass disagrees with the `ci` count for the same check, report
+   both numbers and treat the discrepancy as a finding rather than silently picking one.
+
+4. Produce a consolidated report with all executed sections and overall pass/fail.
 
 ## Defaults
 

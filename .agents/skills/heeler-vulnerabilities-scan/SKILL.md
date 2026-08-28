@@ -95,3 +95,7 @@ Before running scan commands:
 - Explicitly label result as either `policy-gated` or `advisory`.
 - In advisory mode, list top risks in strict severity order with `critical` items first.
 - For top risks, include: CVE/GHSA, CVSS vector (if available), exploitability (`ACTIVE`/`LIKELY`/`NOT`), and reachability (`confirmed`/`possible`/`not observed`).
+
+## Heeler MCP context
+
+If the Heeler MCP server is connected, pair this skill with stored platform context: pull `get_endpoint_security_context_for_project` for existing auth patterns, `get_vulnerabilities_for_project` for active dependency findings, and the `secure_development_checklist` prompt before writing new code. MCP tools reflect the last platform scan of committed code; this skill covers the working tree that scan cannot see.

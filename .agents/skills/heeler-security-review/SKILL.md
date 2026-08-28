@@ -206,3 +206,7 @@ For each `CRITICAL` and `HIGH` finding, include:
 - Prefer allowlists for commands, paths, and outbound hosts.
 - Require explicit user intent before destructive or external-sharing actions.
 - If any scan cannot run, report partial coverage and avoid a full-pass claim.
+
+## Heeler MCP context
+
+If the Heeler MCP server is connected, pair this skill with stored platform context: pull `get_endpoint_security_context_for_project` for existing auth patterns, `get_vulnerabilities_for_project` for active dependency findings, and the `secure_development_checklist` prompt before writing new code. MCP tools reflect the last platform scan of committed code; this skill covers the working tree that scan cannot see.

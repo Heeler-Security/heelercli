@@ -2,6 +2,8 @@
 
 This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning and source-code static analysis (SAST), plus dependency vulnerability, license, and SBOM workflows for C#/.NET (NuGet), Go, Java (Maven), JavaScript/TypeScript (npm + pnpm), PHP (Composer), Python (uv, Poetry, Pipenv, requirements files), Ruby (RubyGems/Bundler), and Rust (Cargo).
 
+GitHub is the CLI's distribution location, not a repository-hosting requirement. `heelercli` works with local files and Git working trees from GitHub, GitLab, Bitbucket, and Azure DevOps.
+
 ## Quick start (recommended)
 
 Add the auto-install hook to your `.pre-commit-config.yaml`:
@@ -9,7 +11,7 @@ Add the auto-install hook to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/Heeler-Security/heelercli
-    rev: 1.0.0 # replace with a release tag
+    rev: 1.0.24
     hooks:
       - id: heelercli-auto
 ```
@@ -36,7 +38,7 @@ If you already install `heelercli` separately, use the system hook:
 ```yaml
 repos:
   - repo: https://github.com/Heeler-Security/heelercli
-    rev: 1.0.0 # replace with a release tag
+    rev: 1.0.24
     hooks:
       - id: heelercli
 ```
@@ -47,11 +49,30 @@ This runs:
 heelercli secrets --pre-commit
 ```
 
-You can also override hook behavior with environment variables:
+The auto-install hook also supports these environment variables:
 
 - `HEELERCLI_FULL_SECRETS_SCAN=1` forces full-repository scan mode.
 - `HEELERCLI_SECRETS_ONLY_VALIDATED=1` adds `--only-validated` to the secrets scan.
 - `HEELERCLI_SECRETS_MODE=pre-commit|full` selects scan mode explicitly.
+
+## Installing a global pre-commit hook
+
+Install `heelercli` on `PATH`, then download and run the installer to scan staged changes in every local Git repository:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Heeler-Security/heelercli/main/install-heelercli-precommit.sh \
+  -o install-heelercli-precommit.sh
+chmod +x install-heelercli-precommit.sh
+./install-heelercli-precommit.sh --global
+```
+
+The installed hook runs `heelercli secrets --pre-commit`. If a pre-commit hook already exists, the installer preserves and runs it before Heeler. Uninstall restores the previous hook and any global Git hooks configuration created by the installer.
+
+```bash
+./install-heelercli-precommit.sh --global --uninstall
+```
+
+Existing installations do not update automatically. Download the current installer and run it again to apply installer updates.
 
 ## Secrets command options
 

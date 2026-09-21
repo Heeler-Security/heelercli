@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: install-heelercli-pre-commit.sh [--global] [--hooks-path PATH] [--uninstall]
+Usage: install-heelercli-precommit.sh [--global] [--hooks-path PATH] [--uninstall]
 
 Installs a Git pre-commit hook that runs heelercli.
 

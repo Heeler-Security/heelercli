@@ -4,6 +4,10 @@ This repository hosts release artifacts for `heelercli` and provides pre-commit 
 
 GitHub is the CLI's distribution location, not a repository-hosting requirement. `heelercli` works with local files and Git working trees from GitHub, GitLab, Bitbucket, and Azure DevOps.
 
+For agent integrations, see the [versioned skill catalog and validation](.agents/README.md)
+and [MCP client setup recipes](.agents/CLIENTS.md). Remote MCP, local skills, sensor
+visibility and enforcement have separate verification status.
+
 ## Quick start (recommended)
 
 Add the auto-install hook to your `.pre-commit-config.yaml`:

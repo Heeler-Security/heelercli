@@ -1,0 +1,243 @@
+{
+  "minimum_cli_version": "1.0.24",
+  "skills": {
+    "heeler-agent-file-scan": [
+      {
+        "path": ["scan-agent-file"],
+        "flags": ["--path", "--format", "--quiet", "--fail-on", "--fail-on-intent", "--exclude-dir"]
+      }
+    ],
+    "heeler-secrets-scan": [
+      {
+        "path": [
+          "secrets"
+        ],
+        "flags": [
+          "--pre-commit",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "login"
+        ],
+        "flags": []
+      }
+    ],
+    "heeler-vulnerabilities-scan": [
+      {
+        "path": [
+          "vulnerabilities"
+        ],
+        "flags": [
+          "--format",
+          "--quiet",
+          "--baseline",
+          "--new-findings-only"
+        ]
+      },
+      {
+        "path": [
+          "assess-sbom"
+        ],
+        "flags": [
+          "--sbom",
+          "--format",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "login"
+        ],
+        "flags": []
+      }
+    ],
+    "heeler-license-check": [
+      {
+        "path": [
+          "licenses"
+        ],
+        "flags": [
+          "--format",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "licenses",
+          "valid"
+        ],
+        "flags": [
+          "--llm-output", "--quiet", "--config", "--profile"
+        ]
+      },
+      {
+        "path": [
+          "policy",
+          "explain"
+        ],
+        "flags": []
+      },
+      {
+        "path": [
+          "login"
+        ],
+        "flags": []
+      }
+    ],
+    "heeler-scan-all": [
+      {
+        "path": [
+          "ci"
+        ],
+        "flags": [
+          "--checks",
+          "--format",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "vulnerabilities"
+        ],
+        "flags": ["--format", "--quiet"]
+      },
+      {
+        "path": [
+          "licenses"
+        ],
+        "flags": ["--format", "--quiet"]
+      },
+      {
+        "path": [
+          "detect-malicious-packages"
+        ],
+        "flags": ["--format", "--quiet"]
+      },
+      {
+        "path": [
+          "secrets"
+        ],
+        "flags": ["--quiet"]
+      },
+      {
+        "path": [
+          "login"
+        ],
+        "flags": []
+      }
+    ],
+    "heeler-security-review": [
+      {
+        "path": [
+          "sast"
+        ],
+        "flags": [
+          "--format",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "assess-sbom"
+        ],
+        "flags": [
+          "--sbom",
+          "--format",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "get-recommended-version"
+        ],
+        "flags": [
+          "--package-ecosystem"
+        ]
+      },
+      {
+        "path": [
+          "detect-malicious-packages"
+        ],
+        "flags": ["--format", "--quiet"]
+      },
+      {
+        "path": [
+          "login"
+        ],
+        "flags": []
+      }
+    ],
+    "heeler-recommended-version": [
+      {
+        "path": [
+          "get-recommended-version"
+        ],
+        "flags": [
+          "--package-ecosystem",
+          "--format",
+          "--output"
+        ]
+      },
+      {
+        "path": [
+          "login"
+        ],
+        "flags": []
+      }
+    ],
+    "heeler-malicious-package-scan": [
+      {
+        "path": [
+          "detect-malicious-packages"
+        ],
+        "flags": [
+          "--format",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "login"
+        ],
+        "flags": []
+      }
+    ],
+    "heeler-threat-modeling": [
+      {
+        "path": [
+          "threat-model",
+          "resolve-service-id"
+        ],
+        "flags": [
+          "--path",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "context"
+        ],
+        "flags": [
+          "--path",
+          "--format",
+          "--output", "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "prompt"
+        ],
+        "flags": [
+          "--service-id",
+          "--framework",
+          "--format",
+          "--output", "--path", "--quiet"
+        ]
+      }
+    ]
+  }
+}

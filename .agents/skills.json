@@ -1,0 +1,345 @@
+{
+  "schema_version": 1,
+  "minimum_cli_version": "1.0.24",
+  "skills": [
+    {
+      "name": "heeler-agent-file-scan",
+      "description": "Assess a local agent instruction, skill, hook, or MCP configuration file before trusting, installing, or committing it, using the existing Heeler CLI upload scan. Use for pre-land agent-file checks, not general repository scanning or stored agent-file inventory.",
+      "path": ".agents/skills/heeler-agent-file-scan/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-agent-file-scan/SKILL.md": "48f90bbfa4f16cca93789c85f53c47f704c1f8ca5ff097754ee7ee9cfbc7544f"
+      },
+      "commands": [
+        {
+          "path": [
+            "scan-agent-file"
+          ],
+          "flags": [
+            "--path",
+            "--format",
+            "--quiet",
+            "--fail-on",
+            "--fail-on-intent",
+            "--exclude-dir"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "heeler-license-check",
+      "description": "Perform dependency license checks and fetch missing license data for packages. Use when a new dependency is installed or when a user asks for OSS license compliance, prohibited license detection, or license inventory generation.",
+      "path": ".agents/skills/heeler-license-check/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-license-check/SKILL.md": "72ff9b917d172b451fb5bc4f143fec1c4152168be8a19c80290c2822e3d594ef"
+      },
+      "commands": [
+        {
+          "path": [
+            "licenses"
+          ],
+          "flags": [
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "licenses",
+            "valid"
+          ],
+          "flags": [
+            "--llm-output",
+            "--quiet",
+            "--config",
+            "--profile"
+          ]
+        },
+        {
+          "path": [
+            "policy",
+            "explain"
+          ],
+          "flags": []
+        },
+        {
+          "path": [
+            "login"
+          ],
+          "flags": []
+        }
+      ]
+    },
+    {
+      "name": "heeler-malicious-package-scan",
+      "description": "Detect suspicious or malicious dependencies using Heeler package-risk intelligence. Use when a new dependency is installed or users ask about typosquatting, malware in dependencies, or supply-chain package risk.",
+      "path": ".agents/skills/heeler-malicious-package-scan/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-malicious-package-scan/SKILL.md": "9c58b8a4c2981600e44681da119620780e58479d899c11d9ed1ebe314597760b"
+      },
+      "commands": [
+        {
+          "path": [
+            "detect-malicious-packages"
+          ],
+          "flags": [
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "login"
+          ],
+          "flags": []
+        }
+      ]
+    },
+    {
+      "name": "heeler-recommended-version",
+      "description": "Determine the recommended dependency version for a package ecosystem. Use when installing a new dependency/updating a dependency or users ask what version of a dependency they should install or upgrade to.",
+      "path": ".agents/skills/heeler-recommended-version/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-recommended-version/SKILL.md": "d00ee4e8227b38784a89029da548cdd525f65dce8b96bb81312560f1e59670b4"
+      },
+      "commands": [
+        {
+          "path": [
+            "get-recommended-version"
+          ],
+          "flags": [
+            "--package-ecosystem",
+            "--format",
+            "--output"
+          ]
+        },
+        {
+          "path": [
+            "login"
+          ],
+          "flags": []
+        }
+      ]
+    },
+    {
+      "name": "heeler-scan-all",
+      "description": "Run a complete Heeler security scan in one pass - secrets, dependency vulnerabilities, licenses, and malicious packages. Use when the user asks for a single 'full scan', 'scan everything', or a pre-release security gate.",
+      "path": ".agents/skills/heeler-scan-all/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-scan-all/SKILL.md": "b5ce5229bc7ead2be74aa32e28201308df9c6a84a9a136caf07a311a0bcd2d65"
+      },
+      "commands": [
+        {
+          "path": [
+            "ci"
+          ],
+          "flags": [
+            "--checks",
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "vulnerabilities"
+          ],
+          "flags": [
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "licenses"
+          ],
+          "flags": [
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "detect-malicious-packages"
+          ],
+          "flags": [
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "secrets"
+          ],
+          "flags": [
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "login"
+          ],
+          "flags": []
+        }
+      ]
+    },
+    {
+      "name": "heeler-secrets-scan",
+      "description": "Run Heeler secret scanning for a repository or staged changes. Use when comitting code or the user asks to detect, validate, or gate on exposed secrets, tokens, credentials, or API keys.",
+      "path": ".agents/skills/heeler-secrets-scan/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-secrets-scan/SKILL.md": "a1486b3b833a88440654cfd3676adb18dc9e5271271c5253b60317ae8f72d977"
+      },
+      "commands": [
+        {
+          "path": [
+            "secrets"
+          ],
+          "flags": [
+            "--pre-commit",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "login"
+          ],
+          "flags": []
+        }
+      ]
+    },
+    {
+      "name": "heeler-security-review",
+      "description": "Perform a repository security review for the current project directory, including secrets exposure risk, dependency vulnerabilities, license/compliance risks, and operational hardening. Use when users ask for a security posture review or prioritized remediation plan.",
+      "path": ".agents/skills/heeler-security-review/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-security-review/SKILL.md": "b6ebac8a6c61321432d918ba8a0ab8f8325d972bc836bb2c3537b702ef14a66b"
+      },
+      "commands": [
+        {
+          "path": [
+            "sast"
+          ],
+          "flags": [
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "assess-sbom"
+          ],
+          "flags": [
+            "--sbom",
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "get-recommended-version"
+          ],
+          "flags": [
+            "--package-ecosystem"
+          ]
+        },
+        {
+          "path": [
+            "detect-malicious-packages"
+          ],
+          "flags": [
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "login"
+          ],
+          "flags": []
+        }
+      ]
+    },
+    {
+      "name": "heeler-threat-modeling",
+      "description": "Resolve a service id, gather threat model context, and build a concrete prompt for threat modeling workflows.",
+      "path": ".agents/skills/heeler-threat-modeling/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-threat-modeling/SKILL.md": "d49036fd2a748e45a860ffd3b2f875d6fdcf1e4699449a7d2e549dba551b9795"
+      },
+      "commands": [
+        {
+          "path": [
+            "threat-model",
+            "resolve-service-id"
+          ],
+          "flags": [
+            "--path",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "context"
+          ],
+          "flags": [
+            "--path",
+            "--format",
+            "--output",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "prompt"
+          ],
+          "flags": [
+            "--service-id",
+            "--framework",
+            "--format",
+            "--output",
+            "--path",
+            "--quiet"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "heeler-vulnerabilities-scan",
+      "description": "Run Heeler dependency vulnerability scanning and policy gating. Use when the user asks for CVE analysis, severity gating, baseline regression checks, or SBOM-based vulnerability assessment.",
+      "path": ".agents/skills/heeler-vulnerabilities-scan/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-vulnerabilities-scan/SKILL.md": "88b6fdb1639d845e276968220d2d757ea8f422600e14d072e5ce81e46c6c089f"
+      },
+      "commands": [
+        {
+          "path": [
+            "vulnerabilities"
+          ],
+          "flags": [
+            "--format",
+            "--quiet",
+            "--baseline",
+            "--new-findings-only"
+          ]
+        },
+        {
+          "path": [
+            "assess-sbom"
+          ],
+          "flags": [
+            "--sbom",
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "login"
+          ],
+          "flags": []
+        }
+      ]
+    }
+  ]
+}

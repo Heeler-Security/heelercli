@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "heeler": {
+      "type": "http",
+      "url": "https://app.heeler.com/mcp"
+    }
+  }
+}

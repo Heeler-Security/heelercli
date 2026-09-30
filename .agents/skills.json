@@ -122,10 +122,10 @@
     },
     {
       "name": "heeler-scan-all",
-      "description": "Run a complete Heeler security scan in one pass - secrets, dependency vulnerabilities, licenses, and malicious packages. Use when the user asks for a single 'full scan', 'scan everything', or a pre-release security gate.",
+      "description": "Run existing Heeler CLI checks for local secrets, dependency vulnerabilities, dependency policy and malicious packages in one pass. Use for a full scan or pre-release gate; this is not SAST or a remote working-tree scan.",
       "path": ".agents/skills/heeler-scan-all/SKILL.md",
       "files": {
-        ".agents/skills/heeler-scan-all/SKILL.md": "b5ce5229bc7ead2be74aa32e28201308df9c6a84a9a136caf07a311a0bcd2d65"
+        ".agents/skills/heeler-scan-all/SKILL.md": "2ac18fb4d66ff4d7c926a34774269efbeace22713ab8a5ca2578ba8e7e51903e"
       },
       "commands": [
         {
@@ -135,7 +135,9 @@
           "flags": [
             "--checks",
             "--format",
-            "--quiet"
+            "--quiet",
+            "--secrets-pre-commit",
+            "--profile"
           ]
         },
         {
@@ -183,10 +185,10 @@
     },
     {
       "name": "heeler-secrets-scan",
-      "description": "Run Heeler secret scanning for a repository or staged changes. Use when comitting code or the user asks to detect, validate, or gate on exposed secrets, tokens, credentials, or API keys.",
+      "description": "Scan local repository files or staged changes for secrets using Heeler CLI. Use before committing or for credential-leak checks; not a dependency scan or an offline-only guarantee.",
       "path": ".agents/skills/heeler-secrets-scan/SKILL.md",
       "files": {
-        ".agents/skills/heeler-secrets-scan/SKILL.md": "a1486b3b833a88440654cfd3676adb18dc9e5271271c5253b60317ae8f72d977"
+        ".agents/skills/heeler-secrets-scan/SKILL.md": "45dd3af6f4da90246ba4fa0f82b1404ee6649ceb237935cf5ffe1dfa6c751aa8"
       },
       "commands": [
         {
@@ -195,7 +197,11 @@
           ],
           "flags": [
             "--pre-commit",
-            "--quiet"
+            "--quiet",
+            "--path",
+            "--exclude",
+            "--fail-on",
+            "--only-validated"
           ]
         },
         {

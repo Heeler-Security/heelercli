@@ -1,6 +1,6 @@
 ---
 name: heeler-secrets-scan
-description: Run Heeler secret scanning for a repository or staged changes. Use when comitting code or the user asks to detect, validate, or gate on exposed secrets, tokens, credentials, or API keys.
+description: Scan local repository files or staged changes for secrets using Heeler CLI. Use before committing or for credential-leak checks; not a dependency scan or an offline-only guarantee.
 ---
 
 # Heeler Secrets Scan
@@ -25,7 +25,7 @@ heelercli secrets [flags]
 
   --exclude strings   (repeatable) directories to exclude as glob patterns (similar to .gitignore)
   --fail-on strings   comma-separated list of types to fail on
-  --only-validated    filter to only show validated items
+  --only-validated    only fail on active credentials plus assumed-valid key material
   --pre-commit        enable pre-commit mode
 ```
 
@@ -38,10 +38,13 @@ Global flags:
 Before running scan commands:
 
 1. Confirm `heelercli` is installed and executable (for example `heelercli --version`).
-2. Confirm authentication context is available for platform-backed checks:
-   - valid stored login (`heelercli login <base-url> <HEELER_API_KEY>`), or
-   - `HEELER_API_KEY` environment variable.
-3. If command output indicates auth is missing/expired/invalid, stop and return auth fix instructions before retrying.
+2. Confirm the repository/path and staged versus broader scope. Secret detection
+   does not require a Heeler platform login; do not demand or change authentication
+   merely to run this local check. These instructions target CLI 1.0.24 or newer.
+3. Detection runs locally, but validation can contact credential providers using
+   candidate credentials. Configured CLI usage telemetry can contact Heeler too.
+   CLI 1.0.24 exposes no offline/no-validation switch. If the user forbids egress or
+   credential probes, stop before scanning and explain the limitation.
 
 ## Workflow
 
@@ -50,12 +53,14 @@ Before running scan commands:
    - Pre-commit behavior: `heelercli secrets --pre-commit -q`
 2. Apply optional tuning:
    - Exclusions: `--exclude "dist/**" --exclude "vendor/**"`
-   - Severity/type gate: `--fail-on aws,github,slack`
+   - Rule-family gate (not severity): `--fail-on aws,github,slack`
    - Lower-noise mode: `--only-validated`
-3. Run scan and capture both findings and exit code.
+3. Run scan and capture stdout, stderr and the actual exit code. Preserve a failure
+   in automation; a wrapper or formatter must not turn it into success. Exit 1 alone
+   does not distinguish findings from an execution error.
 4. Report:
    - Total findings.
-   - Which findings are validation-backed.
+   - Active, assumed-valid, unverified and inactive findings separately.
    - Which items triggered failure criteria.
    - Next remediation actions.
 
@@ -63,8 +68,34 @@ Before running scan commands:
 
 - Always separate "findings" from "fail criteria".
 - Include exact command used.
-- If no findings, explicitly say scan passed.
+- Report a pass only after successful completion, qualified by scope and filters.
+  Timeout, missing prerequisites or malformed output mean incomplete coverage, not
+  zero findings. A passing policy gate with remaining findings is not a clean scan.
+
+## Scope and privacy
+
+Pre-commit mode scans staged content in a Git repository; it does not establish
+that unstaged/untracked changes or all history are clean. Do not stage or modify
+files to make the scan work without authorization. Use `--path` for a requested
+local path; report the broader mode without claiming an exhaustive history audit.
+Honor requested exclusions and disclose their coverage gaps.
+
+`--only-validated` changes failure eligibility to active credentials plus
+assumed-valid key material; not every eligible finding was proved live. Unverified
+does not mean safe. Do not enable filtering or edit suppressions merely to pass.
+
+Do not send source, candidate secrets or raw scanner artifacts to MCP. Report rule,
+path, line and validation state, not credential values—even partially masked ones.
+The scanner uses a temporary findings file and attempts to remove it afterward;
+CLI logs and saved reports can persist. Do not promise zero retention or guaranteed
+cleanup after interruption. Recommend rotation/revocation where appropriate;
+removing a line does not invalidate a credential. Do not rotate keys or install
+hooks unless requested.
 
 ## Heeler MCP context
 
-If the Heeler MCP server is connected, pair this skill with stored platform context: pull `get_endpoint_security_context_for_project` for existing auth patterns, `get_vulnerabilities_for_project` for active dependency findings, and the `secure_development_checklist` prompt before writing new code. MCP tools reflect the last platform scan of committed code; this skill covers the working tree that scan cannot see.
+No MCP connection or architecture review is required. If the user needs stored
+finding context, discover available tools and use their current schemas. Indexed
+platform findings are separate from this local/staged scan and cannot certify
+uncommitted changes. Use [heeler-scan-all](../heeler-scan-all/SKILL.md) for combined
+checks only when the user requests that broader scope.

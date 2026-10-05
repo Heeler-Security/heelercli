@@ -122,12 +122,26 @@
     },
     {
       "name": "heeler-scan-all",
-      "description": "Run existing Heeler CLI checks for local secrets, dependency vulnerabilities, dependency policy and malicious packages in one pass. Use for a full scan or pre-release gate; this is not SAST or a remote working-tree scan.",
+      "description": "Run Heeler local SAST/IaC, secrets, dependency vulnerabilities, dependency policy and malicious-package checks, then verify authorized fixes with scoped rescans and compatibility tests. Use for a full scan or pre-release gate.",
       "path": ".agents/skills/heeler-scan-all/SKILL.md",
       "files": {
-        ".agents/skills/heeler-scan-all/SKILL.md": "2ac18fb4d66ff4d7c926a34774269efbeace22713ab8a5ca2578ba8e7e51903e"
+        ".agents/skills/heeler-scan-all/SKILL.md": "3c9e550e6b7f4a0ac5b82cdfd278c5448fe10218d317e118446c2a9eef9a62e5"
       },
       "commands": [
+        {
+          "path": [
+            "sast"
+          ],
+          "flags": [
+            "--format",
+            "--quiet",
+            "--path",
+            "--exclude-dir",
+            "--exclude",
+            "--fail-on",
+            "--timeout"
+          ]
+        },
         {
           "path": [
             "ci"

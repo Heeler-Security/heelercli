@@ -92,6 +92,10 @@
     ],
     "heeler-scan-all": [
       {
+        "path": ["sast"],
+        "flags": ["--format", "--quiet", "--path", "--exclude-dir", "--exclude", "--fail-on", "--timeout"]
+      },
+      {
         "path": [
           "ci"
         ],

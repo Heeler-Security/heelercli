@@ -298,6 +298,7 @@ This repository includes security-focused agent skills under `.agents/skills/` f
 - malicious package scanning
 - full scan orchestration
 - repository security review
+- task-specific security context and local policy guidance via [heeler-security-context](.agents/skills/heeler-security-context/SKILL.md)
 
 ### Use skills from this repository directly
 

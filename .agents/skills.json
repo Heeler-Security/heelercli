@@ -227,6 +227,28 @@
       ]
     },
     {
+      "name": "heeler-security-context",
+      "description": "Build a concise security brief for a coding task using local Heeler policy and task-relevant stored MCP context. Use before changing endpoints, dependencies, configuration or deployment exposure; preserve provenance, freshness and unknowns.",
+      "path": ".agents/skills/heeler-security-context/SKILL.md",
+      "files": {
+        ".agents/skills/heeler-security-context/SKILL.md": "c98dde9ece0acf3e6726e581253fd78b5f33eaba0d17dad2280e09cfa15c28a3",
+        ".agents/skills/heeler-security-context/references/baseline.md": "f7314b20390163587c20896c8372397b23a1d31b49efaa1e8fb4e24357a866b0"
+      },
+      "commands": [
+        {
+          "path": [
+            "policy",
+            "explain"
+          ],
+          "flags": [
+            "--config",
+            "--profile",
+            "--quiet"
+          ]
+        }
+      ]
+    },
+    {
       "name": "heeler-security-review",
       "description": "Perform a repository security review for the current project directory, including secrets exposure risk, dependency vulnerabilities, license/compliance risks, and operational hardening. Use when users ask for a security posture review or prioritized remediation plan.",
       "path": ".agents/skills/heeler-security-review/SKILL.md",

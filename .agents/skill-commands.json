@@ -1,6 +1,12 @@
 {
   "minimum_cli_version": "1.0.24",
   "skills": {
+    "heeler-security-context": [
+      {
+        "path": ["policy", "explain"],
+        "flags": ["--config", "--profile", "--quiet"]
+      }
+    ],
     "heeler-agent-file-scan": [
       {
         "path": ["scan-agent-file"],

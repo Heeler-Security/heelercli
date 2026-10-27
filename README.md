@@ -15,10 +15,12 @@ Add the auto-install hook to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/Heeler-Security/heelercli
-    rev: 1.0.24
+    rev: 1.0.31
     hooks:
       - id: heelercli-auto
 ```
+
+Run `pre-commit autoupdate` to move `rev` to the newest release.
 
 This hook downloads the correct `heelercli` binary for your OS/arch on first run and reuses the cached binary on subsequent runs. It scans all staged changes for secrets and fails the commit when a secret is detected.
 
@@ -42,7 +44,7 @@ If you already install `heelercli` separately, use the system hook:
 ```yaml
 repos:
   - repo: https://github.com/Heeler-Security/heelercli
-    rev: 1.0.24
+    rev: 1.0.31
     hooks:
       - id: heelercli
 ```
@@ -238,6 +240,15 @@ heelercli sast --format sarif --output sast.sarif --exclude-dir generated
 
 Requires a logged-in user (`heelercli login`); the scan engine is fetched from Heeler on first use.
 
+## More commands
+
+Each command needs a logged-in user (`heelercli login`) or `HEELER_API_KEY`. `secrets revoke`, `pentest import`, `iac export` and `dependency-check --fail-on` need `heelercli` 1.0.30 or later. Run `heelercli <command> --help` for every flag.
+
+- `heelercli dependency-check <package> <exact-version> --package-ecosystem <ecosystem> [--fail-on reject,review,error]`: assess one exact package version before you add it. `--fail-on` lists the outcomes that exit `1` (default `reject`). See the [reference](https://docs.heeler.com/mrecEO40m5D6bt7Pq5pE/reference/cli-command-reference#heelercli-dependency-check).
+- `heelercli secrets revoke <finding-id>`: revoke a credential that Heeler validated as active, at its provider, through Heeler. Asks you to confirm unless you pass `--yes`. See the [reference](https://docs.heeler.com/mrecEO40m5D6bt7Pq5pE/reference/cli-command-reference#heelercli-secrets-revoke).
+- `heelercli pentest import <file>`: import a penetration test export (CSV, DefectDojo JSON or Heeler JSON) into an engagement. Use `--dry-run` to inspect the file first. See the [reference](https://docs.heeler.com/mrecEO40m5D6bt7Pq5pE/reference/cli-command-reference#heelercli-pentest-import).
+- `heelercli iac export`: after `terraform apply`, send the root's Terraform state manifest (resource addresses and identifiers only) to Heeler. Use `--dry-run` to print it without sending. See the [reference](https://docs.heeler.com/mrecEO40m5D6bt7Pq5pE/reference/cli-command-reference#heelercli-iac-export).
+
 ## Supported platforms
 
 | OS | Architecture | Archive format |
@@ -321,6 +332,29 @@ npx @sentry/dotagents add Heeler-Security/heelercli heeler-security-review heele
 ```
 
 For reproducible installs in CI, use `npx @sentry/dotagents install --frozen`.
+
+## Agent hooks
+
+Agent hooks connect `heelercli` to the hook system of an AI coding agent. Before the agent installs a package or edits a dependency manifest, Heeler checks the exact version. With the secret check turned on, Heeler also scans for secrets when the agent commits or pushes. Notify is the default. In Block mode, only a complete, positive finding denies the action. When Heeler cannot check, the action runs with a notice, so the agent is never blocked.
+
+Supported agents: Claude Code (`claude`), Codex CLI (`codex`), GitHub Copilot CLI (`copilot`), Cursor (`cursor`), Gemini CLI (`gemini`), Cline (`cline`), Augment Auggie (`auggie`), Kiro (`kiro`), Factory Droid (`droid`), JetBrains Junie CLI (`junie`), Antigravity CLI (`antigravity`), Devin CLI and Devin Local (`devin`), Amp (`amp`), OpenCode (`opencode`) and goose (`goose`).
+
+Requires `heelercli` 1.0.30 or later.
+
+```bash
+heelercli hook <agent> install            # add the Heeler hook (Notify)
+heelercli hook claude install --block     # deny known-bad packages
+heelercli hook <agent> doctor             # check the installed hook
+heelercli hook preflight                  # before an unattended run, check that hooks will check anything
+heelercli hook codex trust                # trust the Heeler entries in Codex without /hooks
+```
+
+- `--block` denies a known-bad install or manifest edit. It is available for every supported agent, including Claude Code and Codex.
+- `--use-path` writes the hook command as `heelercli` on `PATH` instead of this binary's absolute path, for hook files committed to a repository or built into an image. Available for Claude Code, Codex CLI, GitHub Copilot CLI, Cursor and Gemini CLI, not for native Windows hooks. The first `heelercli` on the agent's `PATH` runs.
+- `heelercli hook codex trust` supports Codex 0.164.x and is not available on native Windows; there, open `/hooks` in Codex and trust the entries.
+- After you upgrade `heelercli`, run `heelercli hook <agent> install` again with your usual options.
+
+See [Agent Hooks](https://docs.heeler.com/mrecEO40m5D6bt7Pq5pE/prevent/agent-hooks) for scopes, options and per-agent behavior.
 
 ## What it scans
 
@@ -661,10 +695,15 @@ cosign verify-blob \
 
 Replace the file names with the archive and bundle for your platform. The `--certificate-identity-regexp` pattern matches the source repository workflow for any release tag, confirming the binary was produced by an official release build.
 
-To pin verification to one exact release instead, use `--certificate-identity` with the full tag. It is an exact string match, not a pattern, so no wildcard is accepted:
+The regexp form above is the recommended one. To pin verification to one exact release instead, use `--certificate-identity` with the full tag. It is an exact string match, not a pattern, so no wildcard is accepted. Set `TAG` to the version you downloaded:
 
 ```bash
-  --certificate-identity "https://github.com/heelerai/heeler-cli/.github/workflows/release.yml@refs/tags/1.0.17"
+TAG=1.0.31   # the version you downloaded
+cosign verify-blob \
+  --bundle heelercli-linux-amd64.tgz.bundle \
+  --certificate-identity "https://github.com/heelerai/heeler-cli/.github/workflows/release.yml@refs/tags/${TAG}" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  heelercli-linux-amd64.tgz
 ```
 
 ## Support

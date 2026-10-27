@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "minimum_cli_version": "1.0.24",
+  "minimum_cli_version": "1.0.30",
   "skills": [
     {
       "name": "heeler-agent-file-scan",
@@ -302,10 +302,10 @@
     },
     {
       "name": "heeler-threat-modeling",
-      "description": "Resolve a service id, gather threat model context, and build a concrete prompt for threat modeling workflows.",
+      "description": "Threat-model with Heeler. Start a design-model build from design documents, import an existing threat model, check an implementation plan against a system's model, list what applies to the code you're changing, report review status with the web-app link, or build a local threat-modeling prompt from service context. Never approves or applies anything.",
       "path": ".agents/skills/heeler-threat-modeling/SKILL.md",
       "files": {
-        ".agents/skills/heeler-threat-modeling/SKILL.md": "d49036fd2a748e45a860ffd3b2f875d6fdcf1e4699449a7d2e549dba551b9795"
+        ".agents/skills/heeler-threat-modeling/SKILL.md": "e0f0ea72110cfa66c7cad4adfe4b695be8592388990e4630f68e4ced572a0f59"
       },
       "commands": [
         {
@@ -341,8 +341,106 @@
             "--format",
             "--output",
             "--path",
+            "--quiet",
+            "--redact-secrets"
+          ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "build"
+          ],
+          "flags": [
+            "--system",
+            "--application",
+            "--file",
+            "--text",
+            "--lens",
+            "--operation-id",
+            "--format"
+          ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "import"
+          ],
+          "flags": [
+            "--system",
+            "--application",
+            "--input-format",
+            "--operation-id",
+            "--format"
+          ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "propose"
+          ],
+          "flags": [
+            "--system",
+            "--application",
+            "--plan",
+            "--lens",
+            "--operation-id",
+            "--format"
+          ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "status"
+          ],
+          "flags": [
+            "--system",
+            "--application",
+            "--wait",
+            "--timeout"
+          ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "show"
+          ],
+          "flags": [
+            "--system",
+            "--application",
+            "--requirements",
+            "--draft"
+          ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "claims"
+          ],
+          "flags": [
+            "--path",
+            "--service-id",
+            "--format",
             "--quiet"
           ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "assertions"
+          ],
+          "flags": [
+            "--path",
+            "--service-id",
+            "--status",
+            "--format",
+            "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "login"
+          ],
+          "flags": []
         }
       ]
     },

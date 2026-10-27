@@ -14,7 +14,7 @@ MCP tool or hosted `.well-known` endpoint.
 - `heeler-security-review`
 - `heeler-recommended-version`
 - `heeler-malicious-package-scan`
-- `heeler-threat-modeling`
+- `heeler-threat-modeling` — design-model builds, imports, plan checks and review status, with decisions in the web app; plus local context and prompt export
 - `heeler-agent-file-scan` — selected-file upload assessment; requires explicit consent
 
 ## Local use (from this repository)
@@ -41,7 +41,7 @@ release tag. This new catalog is not retroactively present in older tags.
 python -m pip install -r requirements-dev.txt
 python -m unittest discover -s tests -p 'test_*.py'
 python scripts/check_skills.py
-python scripts/check_skills.py --cli /path/to/heelercli --expected-version 1.0.24
+python scripts/check_skills.py --cli /path/to/heelercli --expected-version 1.0.30
 ```
 
 After intentional skill edits, update the command contract as needed and regenerate

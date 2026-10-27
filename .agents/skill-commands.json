@@ -1,5 +1,5 @@
 {
-  "minimum_cli_version": "1.0.24",
+  "minimum_cli_version": "1.0.30",
   "skills": {
     "heeler-security-context": [
       {
@@ -251,8 +251,105 @@
           "--service-id",
           "--framework",
           "--format",
-          "--output", "--path", "--quiet"
+          "--output", "--path", "--quiet", "--redact-secrets"
         ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "build"
+        ],
+        "flags": [
+          "--system",
+          "--application",
+          "--file",
+          "--text",
+          "--lens",
+          "--operation-id",
+          "--format"
+        ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "import"
+        ],
+        "flags": [
+          "--system",
+          "--application",
+          "--input-format",
+          "--operation-id",
+          "--format"
+        ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "propose"
+        ],
+        "flags": [
+          "--system",
+          "--application",
+          "--plan",
+          "--lens",
+          "--operation-id",
+          "--format"
+        ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "status"
+        ],
+        "flags": [
+          "--system",
+          "--application",
+          "--wait",
+          "--timeout"
+        ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "show"
+        ],
+        "flags": [
+          "--system",
+          "--application",
+          "--requirements",
+          "--draft"
+        ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "claims"
+        ],
+        "flags": [
+          "--path",
+          "--service-id",
+          "--format",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "assertions"
+        ],
+        "flags": [
+          "--path",
+          "--service-id",
+          "--status",
+          "--format",
+          "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "login"
+        ],
+        "flags": []
       }
     ]
   }

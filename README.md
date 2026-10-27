@@ -310,6 +310,7 @@ This repository includes security-focused agent skills under `.agents/skills/` f
 - full scan orchestration
 - repository security review
 - task-specific security context and local policy guidance via [heeler-security-context](.agents/skills/heeler-security-context/SKILL.md)
+- threat modeling: design builds, plan checks and review status, with decisions in the web app, via [heeler-threat-modeling](.agents/skills/heeler-threat-modeling/SKILL.md)
 
 ### Use skills from this repository directly
 

@@ -9,7 +9,7 @@ on:
       cli_version:
         description: Exact existing public CLI release to check (not latest)
         required: true
-        default: '1.0.24'
+        default: '1.0.30'
 
 permissions:
   contents: read
@@ -28,7 +28,7 @@ jobs:
       - name: Download exact public CLI and verify checksum
         env:
           GH_TOKEN: ${{ github.token }}
-          CLI_VERSION: ${{ inputs.cli_version || '1.0.24' }}
+          CLI_VERSION: ${{ inputs.cli_version || '1.0.30' }}
         run: |
           set -euo pipefail
           [[ "$CLI_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
@@ -39,7 +39,7 @@ jobs:
           tar -xzf heelercli-linux-amd64.tgz heelercli
       - name: Check skill commands against that CLI release
         env:
-          CLI_VERSION: ${{ inputs.cli_version || '1.0.24' }}
+          CLI_VERSION: ${{ inputs.cli_version || '1.0.30' }}
         run: |
           python scripts/check_skills.py --cli ./cli-check/heelercli --expected-version "$CLI_VERSION" > skill-conformance.json
           git rev-parse HEAD > skill-source-commit.txt

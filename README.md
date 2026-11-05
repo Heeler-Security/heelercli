@@ -1,6 +1,6 @@
 # Heeler Security CLI
 
-This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI currently supports secret scanning and source-code static analysis (SAST), plus dependency vulnerability, license, and SBOM workflows for C#/.NET (NuGet), Go, Java (Maven), JavaScript/TypeScript (npm + pnpm), PHP (Composer), Python (uv, Poetry, Pipenv, requirements files), Ruby (RubyGems/Bundler), and Rust (Cargo).
+This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI supports secret scanning and source-code static analysis (SAST), plus dependency vulnerability, license, malicious-package and SBOM workflows that run as dependency scans in Heeler.
 
 GitHub is the CLI's distribution location, not a repository-hosting requirement. `heelercli` works with local files and Git working trees from GitHub, GitLab, Bitbucket, and Azure DevOps.
 
@@ -15,7 +15,7 @@ Add the auto-install hook to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/Heeler-Security/heelercli
-    rev: 1.0.31
+    rev: 2.0.0
     hooks:
       - id: heelercli-auto
 ```
@@ -44,7 +44,7 @@ If you already install `heelercli` separately, use the system hook:
 ```yaml
 repos:
   - repo: https://github.com/Heeler-Security/heelercli
-    rev: 1.0.31
+    rev: 2.0.0
     hooks:
       - id: heelercli
 ```
@@ -120,42 +120,57 @@ heelercli secrets --only-validated
 
 ## Dependency security commands (vulnerability + SBOM)
 
-The Go `heeler-cli` includes dependency analysis commands that are now available in `heelercli` releases as well.
+`vulnerabilities`, `licenses`, `dependency-policy`, `detect-malicious-packages`, `assess-sbom` and the dependency checks in `ci` run as a dependency scan in Heeler. Requires `heelercli` 2.0.0 or later.
 
-### Python dependency support
+How a dependency scan works:
 
-Python manifests/lockfiles currently supported:
+1. The CLI captures the source in scope: the directory you run the command from and everything below it.
+2. It uploads that source to Heeler. Credential files are never uploaded (see [What is sent to Heeler](#what-is-sent-to-heeler)).
+3. Heeler finds the dependency roots, resolves them and evaluates findings.
+4. The CLI receives the findings, scan coverage and, on request, a CycloneDX SBOM per root, then applies your gates.
 
-- `uv.lock` (uv)
-- `poetry.lock` (Poetry)
-- `Pipfile.lock` (Pipenv)
-- `requirements*.txt` (pip requirements files, including nested `-r` includes)
-
-Selection priority per project directory:
-
-- `uv.lock`
-- `poetry.lock`
-- `Pipfile.lock`
-- `requirements*.txt`
-
-If multiple Python manifest types exist in one directory, only the highest-priority type is used for that directory.
+Package-manager toolchains (`npm`, `mvn`, `go`, `dotnet` and others) are not needed on the machine that runs the CLI. Configure private registry credentials in Heeler. Supported ecosystems are the [package ecosystems Heeler supports for SCA](https://docs.heeler.com/mrecEO40m5D6bt7Pq5pE/supported-technologies#package-ecosystems-sca).
 
 ### Vulnerability scan
 
-Use `vulnerabilities` to auto-discover dependency manifests, generate SBOMs, submit them to Heeler, and evaluate policy-based failures.
-
 ```bash
 heelercli vulnerabilities [flags]
+heelercli vulnerabilities submit [flags]
+heelercli vulnerabilities fetch <scan-id> [flags]
 ```
 
-Important flags:
+Policy flags:
 
-- `--fail-on-any`: fail if any vulnerability is found.
-- `--fail-on-severity critical,high`: fail on selected severities.
-- `--fail-on-id CVE-2024-1234,GHSA-xxxx-yyyy-zzzz`: fail on specific IDs.
-- `--exclude-dir path/to/dir`: exclude directories from manifest/SBOM detection (repeatable).
-- `--baseline <path>` and `--new-findings-only`: only fail on findings not present in a baseline report.
-- `--format detailed|table|json|sarif` and `--output <path>`: control output format and destination.
+| Flag | Description |
+| --- | --- |
+| `--fail-on-any` | Fail if any vulnerability is found. |
+| `--fail-on-severity critical,high` | Fail on the listed severities. |
+| `--fail-on-id CVE-2024-1234,GHSA-xxxx-yyyy-zzzz` | Fail on specific IDs. |
+| `--new-findings-only` | Gate only on new findings. Without `--baseline`, "new" means not in the latest scan of the repository's monitored branch. |
+| `--baseline <path>` | Compare against a baseline report file instead. |
+| `--allow-incomplete` | Report partial resolution or an incomplete SBOM export as a warning instead of exit `10`. Gates still apply. |
+
+Source flags (pick one):
+
+| Flag | What is sent | Default |
+| --- | --- | --- |
+| `--working-tree` | Tracked and untracked files, plus ignored files that are dependency inputs such as a generated lockfile | Outside hooks |
+| `--staged` | The staged (index) content | In hooks |
+| `--commit` | The repository identity and the pushed `HEAD` SHA, no file contents | Never |
+| `--sbom <path>` | A CycloneDX SBOM, unchanged | Never |
+
+Other flags:
+
+| Flag | Description |
+| --- | --- |
+| `--exclude-dir <path>` | Exclude a directory, relative to the invocation directory. Directory-prefix match, not a glob. Repeat or comma-separate. |
+| `--timeout <duration>` | How long to wait for the scan. Default `30m`, or `60s` in hooks. |
+| `--strict` | In a hook, fail when the scan cannot complete instead of warning. |
+| `--sbom-out <dir>` | Write the CycloneDX SBOM for each root, plus `sboms.json`, to a directory. Add `--overwrite` to replace existing files. |
+| `--repository`, `--branch`, `--pr` | Override the identity reported with the scan. `--pr` does not select the PR source or run PR guardrails. |
+| `--format detailed\|table\|json\|llm\|sarif`, `--output <path>` | Output format and destination. |
+
+`submit` uploads the input, prints the scan ID and exits. `fetch <scan-id>` waits for that scan and reports it with the same formats and gates. If the wait ends before the scan finishes, the scan keeps running in Heeler and the CLI prints the `fetch` command to collect it.
 
 Examples:
 
@@ -163,13 +178,46 @@ Examples:
 # fail on critical/high only
 heelercli vulnerabilities --fail-on-severity critical,high
 
+# scan only staged changes
+heelercli vulnerabilities --staged --fail-on-any
+
 # regression mode in CI (new issues only)
 heelercli vulnerabilities --baseline .heeler-baseline-vulns.json --new-findings-only
+
+# export the SBOM Heeler built for each root
+heelercli vulnerabilities --sbom-out sboms
 ```
+
+### Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Complete scan, no gate failure; or `submit` accepted |
+| `1` | Gate failure; invalid option, configuration, baseline or report; conflicting source flags |
+| `2` | Invalid `--timeout` |
+| `3` | Heeler rejected the API key or access (HTTP 401 or 403); no report is written |
+| `4` | CI scanning is not enabled for your organization |
+| `10` | Scan failed, not scanned, no dependency roots, incomplete resolution, network failure, or the wait ended before the scan finished |
+
+A gate failure (`1`) takes precedence over incomplete coverage (`10`). In a hook, a scan that cannot complete warns and exits `0` unless `--strict` is set. See [Dependency scan exit codes](https://docs.heeler.com/mrecEO40m5D6bt7Pq5pE/reference/cli-command-reference#dependency-scan-exit-codes).
+
+### What is sent to Heeler
+
+- **Working-tree and staged scans** upload the selected files in scope. Run below the repository root to limit the upload to that subtree.
+- **Credential files are never uploaded**: `.npmrc`, `.pypirc`, `settings.xml`, `settings-security.xml`, `.netrc`, `_netrc`, `.env*`, cloud credential stores (`.aws`, `.azure`, `gcloud`), SSH and GnuPG stores, credential and service-account JSON files, private keys (`id_rsa*`, `id_dsa*`, `id_ecdsa*`, `id_ed25519*`) and key stores (`.pem`, `.key`, `.p12`, `.pfx`, `.jks`, `.keystore`), at any depth. For tracked credential files, only a content fingerprint (the Git blob hash) is sent.
+- `.git`, `.hg` and `.svn` are not uploaded. Ignored files that are not dependency inputs, such as build output, are left out with a warning.
+- Symbolic links inside the repository are sent as links, never followed. Links that leave the repository are left out with a warning.
+- Populated submodules are included. A submodule that is not checked out makes the scan incomplete.
+- **Commit scans** send only the repository identity and commit SHA.
+- **SBOM scans** upload the SBOM file unchanged.
+
+A working-tree or staged scan started in a Gradle subdirectory uploads the repository's files, not only the subdirectory, so parent settings, wrappers, build logic and sibling projects resolve. Only roots in the requested scope are reported.
+
+See [Dependency scans](https://docs.heeler.com/mrecEO40m5D6bt7Pq5pE/reference/cli-command-reference#dependency-scans) for scope, exclusions and SBOM export details.
 
 ### SBOM assessment
 
-Use `assess-sbom` to assess an existing CycloneDX JSON SBOM file.
+Use `assess-sbom` to assess an existing CycloneDX JSON SBOM file. It reports findings and does not apply vulnerability gates; to gate on an SBOM, use `heelercli vulnerabilities --sbom <path>` with a policy flag.
 
 ```bash
 heelercli assess-sbom --sbom ./sbom.json [flags]
@@ -178,8 +226,9 @@ heelercli assess-sbom --sbom ./sbom.json [flags]
 Important flags:
 
 - `--sbom <path>`: path to a CycloneDX JSON SBOM file.
-- `--format detailed|table|json|sarif`: choose output format.
+- `--format detailed|table|json|llm|sarif`: choose output format.
 - `--output <path>`: write output to file.
+- `--timeout`, `--allow-incomplete`, `--strict`, and the `submit` and `fetch <scan-id>` subcommands work as for `vulnerabilities`.
 
 Notes:
 
@@ -187,7 +236,7 @@ Notes:
 
 ### License checks
 
-Use `licenses` to scan discovered dependencies for license risk and policy violations.
+Use `licenses` to scan dependencies for license risk and policy violations. It runs the same dependency scan in Heeler and uses your organization's directory exclusions.
 
 ```bash
 heelercli licenses --format llm -q
@@ -259,15 +308,10 @@ Each command needs a logged-in user (`heelercli login`) or `HEELER_API_KEY`. `se
 
 ## Current limitations and prerequisites
 
-- Dependency detection for vulnerability, license, and SBOM workflows currently supports C#/.NET (NuGet), Go, Java (Maven), JavaScript/TypeScript (npm + pnpm), PHP (Composer), Python (uv, Poetry, Pipenv, requirements files), Ruby (RubyGems/Bundler), and Rust (Cargo).
-- Go detection scans `go.mod` files and requires a working Go toolchain (`go`) on the machine running the CLI.
-- Java detection scans `pom.xml` files and requires Maven (`mvn`) and a usable Java toolchain on the machine running the CLI.
-- Additional ecosystems may require local package toolchains when lockfiles alone are not sufficient (for example `dotnet`, `npm`/`pnpm`, `composer`, `bundle`, and `cargo`).
-- Python dependency graph generation is best-effort and depends on lockfile completeness and local tools.
-- For `uv.lock`, graph edges are generated from parsed lock data. If parsing fails, the CLI falls back to `uv export`, which recovers components but may not include dependency edges.
-- For `Pipfile.lock`, graph edges are taken from lockfile metadata when present. If missing, the CLI attempts `pipenv graph --json-tree`; if unavailable/failing, output may be component-only.
-- For `requirements*.txt`, pinned packages (`==`) are always collected as components. For unpinned requirements, the CLI attempts `python -m pip install --dry-run --report` (with a temporary virtualenv fallback) to resolve versions and graph edges; if resolution fails, output falls back to pinned components only.
-- If required toolchains are missing, SBOM generation for that manifest fails and those results are incomplete.
+- Dependency scans of source need a Git repository. Outside Git, scan a CycloneDX SBOM with `--sbom <path>`.
+- `--commit` needs `HEAD` to be pushed: reachable from a remote-tracking branch, or equal to `FETCH_HEAD`.
+- `--exclude-dir` applies to `vulnerabilities`. `licenses`, `dependency-policy`, `detect-malicious-packages` and the dependency checks in `ci` use your organization's exclusions in Heeler.
+- A scan that finds no dependency roots in scope exits `10`.
 
 ## Login and API key flow
 
@@ -699,7 +743,7 @@ Replace the file names with the archive and bundle for your platform. The `--cer
 The regexp form above is the recommended one. To pin verification to one exact release instead, use `--certificate-identity` with the full tag. It is an exact string match, not a pattern, so no wildcard is accepted. Set `TAG` to the version you downloaded:
 
 ```bash
-TAG=1.0.31   # the version you downloaded
+TAG=2.0.0   # the version you downloaded
 cosign verify-blob \
   --bundle heelercli-linux-amd64.tgz.bundle \
   --certificate-identity "https://github.com/heelerai/heeler-cli/.github/workflows/release.yml@refs/tags/${TAG}" \

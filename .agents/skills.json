@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "minimum_cli_version": "1.0.30",
+  "minimum_cli_version": "2.0.0",
   "skills": [
     {
       "name": "heeler-agent-file-scan",
@@ -125,7 +125,7 @@
       "description": "Run Heeler local SAST/IaC, secrets, dependency vulnerabilities, dependency policy and malicious-package checks, then verify authorized fixes with scoped rescans and compatibility tests. Use for a full scan or pre-release gate.",
       "path": ".agents/skills/heeler-scan-all/SKILL.md",
       "files": {
-        ".agents/skills/heeler-scan-all/SKILL.md": "3c9e550e6b7f4a0ac5b82cdfd278c5448fe10218d317e118446c2a9eef9a62e5"
+        ".agents/skills/heeler-scan-all/SKILL.md": "2d3cca2f1ab2b49c96a85d34be680b14e90deb588a2d2dabbc923957f62a8fa0"
       },
       "commands": [
         {
@@ -449,7 +449,7 @@
       "description": "Run Heeler dependency vulnerability scanning and policy gating. Use when the user asks for CVE analysis, severity gating, baseline regression checks, or SBOM-based vulnerability assessment.",
       "path": ".agents/skills/heeler-vulnerabilities-scan/SKILL.md",
       "files": {
-        ".agents/skills/heeler-vulnerabilities-scan/SKILL.md": "88b6fdb1639d845e276968220d2d757ea8f422600e14d072e5ce81e46c6c089f"
+        ".agents/skills/heeler-vulnerabilities-scan/SKILL.md": "f984df86d36344a182501592b81de02ca905db1e1422c5894a2c2725e456986c"
       },
       "commands": [
         {

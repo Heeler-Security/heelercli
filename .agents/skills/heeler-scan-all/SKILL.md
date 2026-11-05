@@ -44,23 +44,26 @@ Before running any scan in this workflow:
    If the user requests a subset that excludes SAST, skip it explicitly. A scoped
    subset result cannot establish coverage of the other checks.
 
-   `ci` generates the SBOM once and reuses it across the dependency checks, so this is
-   the cheapest way to learn what each check found and whether anything violated policy.
+   `ci` runs one dependency scan in Heeler and shares it across the dependency checks, so
+   this is the cheapest way to learn what each check found and whether anything violated policy.
    Its per-check summary lines provide the counts in Section A-D; SAST JSON provides
    the total, severity counts, rules and file/line evidence in Section E.
-   In CLI 1.0.24 the defaults are vulnerabilities, dependency-policy, malicious-packages
+   The defaults are vulnerabilities, dependency-policy, malicious-packages
    and secrets. Respect the user's subset via `--checks`. The optional `licenses`
    check is mutually exclusive with dependency-policy and omits package-age checks.
    The default `ci` selection excludes SAST and agent-file analysis. Do not add content-uploading
    agent-file checks without a separate scope/data-sharing decision.
-   For staged secrets use `--secrets-pre-commit`; dependency inputs remain local
-   repository inputs, not a staged-diff-only assessment.
+   For staged secrets use `--secrets-pre-commit`. The dependency scan uploads the working
+   tree in scope (the invocation directory and below) by default, not only the staged diff.
 
    Capture stdout, stderr and the actual exit status. Preserve failure in automation;
    do not hide it with a pipeline's final exit code or `|| true`. `error` means
    incomplete, not zero findings. Exit 1 can mean policy failure, execution error,
-   or both; setup failures may occur before a report. Report SBOM errors, excluded
-   manifests and skipped checks; partial coverage cannot establish a clean result.
+   or both; setup failures may occur before a report. Exit 10 means the dependency scan
+   was not scanned, resolved incompletely or was still running (`pending`); exit 3 means
+   Heeler rejected authentication and no report was written; exit 4 means CI scanning is
+   not enabled for the organization. Report unresolved roots and skipped checks; partial
+   coverage cannot establish a clean result.
 
 2. Run detail passes only for the sections that need more than a count. `ci` reports
    status, violations and a summary per check - it does not return CVE identifiers, CVSS
@@ -152,7 +155,7 @@ credential actions, skipped checks and missing or stale platform evidence.
 
 ## Notes
 
-- If one scanner cannot run (missing toolchain), continue remaining scans and clearly mark partial coverage.
+- If one scanner cannot run or a dependency root is not fully resolved, continue remaining scans and clearly mark partial coverage.
 
 ## Heeler MCP context
 
@@ -166,17 +169,18 @@ Do not require an architecture/design review for an ordinary local scan.
 
 | Check | Local work | Network / data leaving the machine |
 | --- | --- | --- |
-| Vulnerabilities | Build dependency inventory | Dependency/SBOM metadata sent to Heeler for assessment |
-| Dependency policy / licenses | Build inventory and apply gates | Package metadata and policy/intelligence requests to Heeler |
-| Malicious packages | Build inventory | Package coordinates sent for Heeler intelligence |
+| Vulnerabilities | Capture source in scope and apply gates | Source in scope uploaded to Heeler (credential files withheld); Heeler resolves dependencies |
+| Dependency policy / licenses | Apply gates | Same shared dependency scan as vulnerabilities |
+| Malicious packages | Apply gates | Same shared dependency scan as vulnerabilities |
 | Secrets | Embedded scanner reads local or staged content | Credential validation can contact credential providers |
 | SAST/IaC | Local skully engine reads the selected source directory | Authenticated engine download and run-token/validation requests to Heeler |
 
-Dependency discovery may invoke ecosystem tools with registry access. Configured
-CLI usage telemetry can contact Heeler. Do not promise offline operation or no
+Dependency scans upload the working tree in scope, including uncommitted and untracked
+files; credential files such as `.npmrc`, `.pypirc`, `settings.xml`, `.netrc`, `.env*` and
+private keys are never uploaded. Configured CLI usage telemetry can contact Heeler. Do not promise offline operation or no
 egress from the word "local". If the request forbids these network operations,
 pause before running and explain the boundary; do not invent an offline flag.
 Reports and CLI logs may persist locally: follow the user's retention policy,
 avoid unnecessary artifacts, and never copy raw credentials or sensitive snippets
-into chat, MCP, tickets or uploaded reports. No source upload or zero-retention
-guarantee is implied by this skill.
+into chat, MCP, tickets or uploaded reports. No zero-retention guarantee is implied
+by this skill.

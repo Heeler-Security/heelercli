@@ -1,6 +1,6 @@
 # Heeler Security CLI
 
-This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI supports secret scanning and source-code static analysis (SAST), plus dependency vulnerability, license, malicious-package and SBOM workflows that run as dependency scans in Heeler.
+This repository hosts release artifacts for `heelercli` and provides pre-commit hooks for local and CI security checks. The CLI supports secret scanning, and source-code static analysis (SAST), dependency vulnerability, license, malicious-package and SBOM workflows that run as scans in Heeler.
 
 GitHub is the CLI's distribution location, not a repository-hosting requirement. `heelercli` works with local files and Git working trees from GitHub, GitLab, Bitbucket, and Azure DevOps.
 
@@ -15,7 +15,7 @@ Add the auto-install hook to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/Heeler-Security/heelercli
-    rev: 2.0.0
+    rev: 2.1.0
     hooks:
       - id: heelercli-auto
 ```
@@ -44,7 +44,7 @@ If you already install `heelercli` separately, use the system hook:
 ```yaml
 repos:
   - repo: https://github.com/Heeler-Security/heelercli
-    rev: 2.0.0
+    rev: 2.1.0
     hooks:
       - id: heelercli
 ```
@@ -258,24 +258,50 @@ heelercli download-sbom --application_id <id>
 
 ## Source code scanning (SAST)
 
-Use `sast` to run Heeler's static analysis over the current repository or directory locally and report code-security findings (injection, taint data-flows, insecure configuration, and more). The scan engine is downloaded on demand for a logged-in user, checksum- and signature-verified, then cached; new engine versions roll out without a CLI upgrade.
+Use `sast` to scan the repository in Heeler and report code-security findings: application code (injection, taint data flows, insecure configuration and more), infrastructure as code, CI/CD configuration and known-malicious files. The CLI uploads the source in scope; Heeler analyzes it and returns the findings with the same ids, severity, triage status and suppressions it shows in the product. Requires `heelercli` 2.1.0 or later.
 
 ```bash
 heelercli sast [flags]
+heelercli sast submit [flags]
+heelercli sast fetch <scan-id> [flags]
 ```
 
-Important flags:
+| Flag | Description |
+| --- | --- |
+| `--fail-on critical,high,medium,low,info` | Severities that fail the command. Omitted, any gate-eligible finding fails. |
+| `--new-findings-only` | Gate only on new findings. Exits `10` when no comparison is available. |
+| `--working-tree`, `--staged`, `--commit` | Pick one: working-tree files (default outside hooks), staged content (default in hooks), or the pushed `HEAD` commit. |
+| `--path <dir>` | Directory to scan. Defaults to the enclosing Git repository. |
+| `--exclude <dir>` / `--exclude-dir <dir>` | Exclude a repository-relative directory: `dir`, `dir/` or `dir/**`. Repeat for multiple directories. Heeler applies these on top of your organization's exclusions. Other patterns are rejected with exit `2`. |
+| `--timeout <duration>` | Maximum wait for the scan. Default `30m`, or `60s` in hooks. |
+| `--strict` | In a hook, fail when the scan cannot complete instead of warning. |
+| `--format detailed\|table\|json\|sarif`, `--output <path>` | Output format and destination. |
 
-- `--fail-on critical,high,medium,low,info`: severities that fail the command (empty fails on any finding).
-- `--repo-profile`: include repository profiling in the scan.
-- `--exclude "<glob>"` / `--exclude-dir <path>`: exclude directories (glob patterns or paths, repeatable).
-- `--path <dir>`: directory to scan (defaults to the enclosing git repository, or the current directory outside git).
-- `--timeout <duration>`: maximum scan runtime before timing out (default `10m`).
-- `--format detailed|table|json|sarif` and `--output <path>`: control output format and destination.
+`submit` uploads the input, prints the scan ID and exits. `fetch <scan-id>` waits for that scan and reports it with the same formats and gates. If the wait ends before the scan finishes, the scan keeps running in Heeler and the CLI prints the `fetch` command to collect it.
 
-Exit behavior: `heelercli` returns `0` when no failing findings are found, and non-zero otherwise. Findings are ordered most-severe-first; failing findings are determined by `--fail-on`.
+Each finding is marked `new`, `existing` or `fixed` against the repository's analysis in Heeler and carries its triage and fix status. Suppressed, false-positive, accepted-risk and fixed findings are printed and never fail the command. `--fail-on` counts gate-eligible findings: open or in-progress triage, not fixed, not suppressed. `--new-findings-only` counts only new ones and exits `10` when Heeler has no analysis to compare with. Findings without a comparison are `unlabeled`; findings whose status could not be established are `status_unknown`. Findings are ordered most severe first.
 
-Git is optional: outside a git repository the current directory is scanned as-is, and the resolved scan root is printed to stderr. Use `--path` to target a specific directory. Requires `heelercli` 1.0.17 or newer.
+JSON findings include `risk_factors`, the same object Heeler shows for the finding (environment, accessibility, sensitive data and mitigation evidence), only when Heeler has it. When Heeler does not provide a line, JSON omits the `line` key; text and table output print no line.
+
+Per-root coverage reports scanned, not applicable or incomplete. `not_applicable` discloses skipped extensions and parse-dependent checks that did not apply; it never fails a check on its own. A repository with zero analyzable code reports "No supported code found", not a clean security verdict. In `ci`, incomplete code coverage reports `incomplete`. Against an older server, the CLI uses the older coverage rule and reports that fallback.
+
+### Code scan exit codes
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Complete and no gate failure, or `submit` accepted |
+| `1` | Gate failure, invalid option, configuration or report |
+| `2` | Usage error: invalid `--timeout`, an exclusion pattern Heeler cannot apply, or conflicting source flags |
+| `3` | Heeler rejected the API key or access |
+| `4` | CI scanning is not enabled for the organization |
+| `10` | Not scanned, incomplete, comparison unavailable with `--new-findings-only`, status unknown, or the wait ended before the scan finished |
+
+In a hook, `10` is a warning unless `--strict`. In `ci`, a gate failure (`1`) wins over `10`.
+
+What is sent:
+
+- The source in scope, with the credential-file rules of [What is sent to Heeler](#what-is-sent-to-heeler).
+- When Heeler already holds the repository, only the files that differ from the commit Heeler analyzed.
 
 Examples:
 
@@ -285,9 +311,12 @@ heelercli sast --fail-on critical,high
 
 # SARIF for code-scanning upload, excluding generated code
 heelercli sast --format sarif --output sast.sarif --exclude-dir generated
+
+# gate on new high-severity findings in staged content
+heelercli sast --staged --new-findings-only --fail-on high
 ```
 
-Requires a logged-in user (`heelercli login`); the scan engine is fetched from Heeler on first use.
+Requires a logged-in user (`heelercli login`) or `HEELER_API_KEY`, and a Git repository. See [Code scans](https://docs.heeler.com/mrecEO40m5D6bt7Pq5pE/reference/cli-command-reference#code-scans).
 
 ## More commands
 
@@ -308,9 +337,9 @@ Each command needs a logged-in user (`heelercli login`) or `HEELER_API_KEY`. `se
 
 ## Current limitations and prerequisites
 
-- Dependency scans of source need a Git repository. Outside Git, scan a CycloneDX SBOM with `--sbom <path>`.
+- Dependency and code scans of source need a Git repository. Outside Git, scan a CycloneDX SBOM with `--sbom <path>` for dependencies.
 - `--commit` needs `HEAD` to be pushed: reachable from a remote-tracking branch, or equal to `FETCH_HEAD`.
-- `--exclude-dir` applies to `vulnerabilities`. `licenses`, `dependency-policy`, `detect-malicious-packages` and the dependency checks in `ci` use your organization's exclusions in Heeler.
+- `--exclude-dir` applies to `vulnerabilities`. `licenses`, `dependency-policy`, `detect-malicious-packages` and the dependency checks in `ci` use your organization's exclusions in Heeler. `sast --exclude-dir` takes a repository-relative directory.
 - A scan that finds no dependency roots in scope exits `10`.
 
 ## Login and API key flow
@@ -380,7 +409,7 @@ For reproducible installs in CI, use `npx @sentry/dotagents install --frozen`.
 
 ## Agent hooks
 
-Agent hooks connect `heelercli` to the hook system of an AI coding agent. Before the agent installs a package or edits a dependency manifest, Heeler checks the exact version. With the secret check turned on, Heeler also scans for secrets when the agent commits or pushes. Notify is the default. In Block mode, only a complete, positive finding denies the action. When Heeler cannot check, the action runs with a notice, so the agent is never blocked.
+Agent hooks connect `heelercli` to the hook system of an AI coding agent. Before the agent installs a package or edits a dependency manifest, Heeler checks the exact version. With the secret check turned on, Heeler also scans for secrets when the agent commits or pushes. With the Code check turned on, Heeler scans the commits the agent is about to push and reports new findings; it never denies. Notify is the default. In Block mode, only a complete, positive finding denies the action. When Heeler cannot check, the action runs with a notice, so the agent is never blocked.
 
 Supported agents: Claude Code (`claude`), Codex CLI (`codex`), GitHub Copilot CLI (`copilot`), Cursor (`cursor`), Gemini CLI (`gemini`), Cline (`cline`), Augment Auggie (`auggie`), Kiro (`kiro`), Factory Droid (`droid`), JetBrains Junie CLI (`junie`), Antigravity CLI (`antigravity`), Devin CLI and Devin Local (`devin`), Amp (`amp`), OpenCode (`opencode`) and goose (`goose`).
 
@@ -743,7 +772,7 @@ Replace the file names with the archive and bundle for your platform. The `--cer
 The regexp form above is the recommended one. To pin verification to one exact release instead, use `--certificate-identity` with the full tag. It is an exact string match, not a pattern, so no wildcard is accepted. Set `TAG` to the version you downloaded:
 
 ```bash
-TAG=2.0.0   # the version you downloaded
+TAG=2.1.0   # the version you downloaded
 cosign verify-blob \
   --bundle heelercli-linux-amd64.tgz.bundle \
   --certificate-identity "https://github.com/heelerai/heeler-cli/.github/workflows/release.yml@refs/tags/${TAG}" \

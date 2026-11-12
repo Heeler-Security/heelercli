@@ -1,6 +1,6 @@
 ---
 name: heeler-scan-all
-description: Run Heeler local SAST/IaC, secrets, dependency vulnerabilities, dependency policy and malicious-package checks, then verify authorized fixes with scoped rescans and compatibility tests. Use for a full scan or pre-release gate.
+description: Run Heeler secrets, dependency vulnerabilities, dependency policy, malicious-package and code (SAST and IaC) checks, then verify authorized fixes with scoped rescans and compatibility tests. Use for a full scan or pre-release gate.
 ---
 
 # Heeler Scan All
@@ -20,7 +20,7 @@ Use this skill to scan the working tree and verify authorized security fixes.
 Before running any scan in this workflow:
 
 1. Confirm `heelercli` is installed and executable (for example `heelercli --version`).
-2. Confirm existing authentication and the intended platform target for dependency checks and SAST engine access.
+2. Confirm existing authentication and the intended platform target for dependency checks and the code scan.
    Do not print keys, replace a login or silently switch environments. `--profile`
    selects a policy profile, not an authentication environment.
 3. If command output indicates auth is missing/expired/invalid, stop and return auth fix instructions before retrying.
@@ -85,8 +85,9 @@ Before running any scan in this workflow:
    scope through `--path`, exclusions through `--exclude-dir`/`--exclude`, severity
    gate through `--fail-on`, and timeout through `--timeout`. SAST fails on any
    finding by default; a user-selected severity gate still leaves other findings
-   visible. It skips tests and has engine file-size and fragment limits; a clean
-   result is not proof that every source file was analyzed.
+   visible. `--exclude-dir` and `--exclude` take repository-relative directories.
+   A root the scan did not complete is reported as incomplete; a clean result with
+   incomplete coverage is not a clean repository.
 
    Skip any detail pass whose `ci` check reported nothing of interest, and say in the
    report that it was skipped for that reason.
@@ -173,9 +174,9 @@ Do not require an architecture/design review for an ordinary local scan.
 | Dependency policy / licenses | Apply gates | Same shared dependency scan as vulnerabilities |
 | Malicious packages | Apply gates | Same shared dependency scan as vulnerabilities |
 | Secrets | Embedded scanner reads local or staged content | Credential validation can contact credential providers |
-| SAST/IaC | Local skully engine reads the selected source directory | Authenticated engine download and run-token/validation requests to Heeler |
+| SAST/IaC | Capture the source in scope and apply gates | Source in scope uploaded to Heeler (credential files withheld); Heeler analyzes the code |
 
-Dependency scans upload the working tree in scope, including uncommitted and untracked
+Dependency and code scans upload the working tree in scope, including uncommitted and untracked
 files; credential files such as `.npmrc`, `.pypirc`, `settings.xml`, `.netrc`, `.env*` and
 private keys are never uploaded. Configured CLI usage telemetry can contact Heeler. Do not promise offline operation or no
 egress from the word "local". If the request forbids these network operations,

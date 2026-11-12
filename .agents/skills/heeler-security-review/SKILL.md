@@ -84,7 +84,7 @@ Execution mode requirements for subskills:
      - Treat its findings as **input, not conclusions**. The evidence requirements below
        still apply to each one: a scanner reports a sink, it does not establish that
        attacker-controlled data reaches it or that the target is reachable.
-     - `sast` downloads its engine on first use and needs a logged-in user. If it cannot
+     - `sast` runs in Heeler and needs a logged-in user and a Git repository. If it cannot
        run, say so under "Areas not reviewed" and continue the manual trace - do not skip
        this section.
    - Check whether attacker-controlled input can influence outbound URLs, hosts, ports, or protocols.

@@ -122,10 +122,10 @@
     },
     {
       "name": "heeler-scan-all",
-      "description": "Run Heeler local SAST/IaC, secrets, dependency vulnerabilities, dependency policy and malicious-package checks, then verify authorized fixes with scoped rescans and compatibility tests. Use for a full scan or pre-release gate.",
+      "description": "Run Heeler secrets, dependency vulnerabilities, dependency policy, malicious-package and code (SAST and IaC) checks, then verify authorized fixes with scoped rescans and compatibility tests. Use for a full scan or pre-release gate.",
       "path": ".agents/skills/heeler-scan-all/SKILL.md",
       "files": {
-        ".agents/skills/heeler-scan-all/SKILL.md": "2d3cca2f1ab2b49c96a85d34be680b14e90deb588a2d2dabbc923957f62a8fa0"
+        ".agents/skills/heeler-scan-all/SKILL.md": "c4883d9b390509fdbd845d14133f5b24ce9a632ef186f0de5a4d5bc1f3feb6a8"
       },
       "commands": [
         {
@@ -253,7 +253,7 @@
       "description": "Perform a repository security review for the current project directory, including secrets exposure risk, dependency vulnerabilities, license/compliance risks, and operational hardening. Use when users ask for a security posture review or prioritized remediation plan.",
       "path": ".agents/skills/heeler-security-review/SKILL.md",
       "files": {
-        ".agents/skills/heeler-security-review/SKILL.md": "b6ebac8a6c61321432d918ba8a0ab8f8325d972bc836bb2c3537b702ef14a66b"
+        ".agents/skills/heeler-security-review/SKILL.md": "faddf0e14e1cc7d414d5dbd2b357ee6bd976cc4d3144332d41dcd73968edf6e2"
       },
       "commands": [
         {

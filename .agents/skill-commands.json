@@ -305,7 +305,9 @@
           "--system",
           "--application",
           "--wait",
-          "--timeout"
+          "--timeout",
+          "--show",
+          "--format"
         ]
       },
       {
@@ -343,6 +345,19 @@
           "--status",
           "--format",
           "--quiet"
+        ]
+      },
+      {
+        "path": [
+          "threat-model",
+          "check"
+        ],
+        "flags": [
+          "--path",
+          "--base",
+          "--review",
+          "--system",
+          "--format"
         ]
       },
       {

@@ -302,10 +302,10 @@
     },
     {
       "name": "heeler-threat-modeling",
-      "description": "Threat-model with Heeler. Start a design-model build from design documents, import an existing threat model, check an implementation plan against a system's model, list what applies to the code you're changing, report review status with the web-app link, or build a local threat-modeling prompt from service context. Never approves or applies anything.",
+      "description": "Threat-model with Heeler. Start a design-model build from design documents, import an existing threat model, check an implementation plan against a system's model, list what applies to the code you're changing, report review status with the web-app link, check finished work against the model before you say it's done, or build a local threat-modeling prompt from service context. Never approves or applies anything.",
       "path": ".agents/skills/heeler-threat-modeling/SKILL.md",
       "files": {
-        ".agents/skills/heeler-threat-modeling/SKILL.md": "e0f0ea72110cfa66c7cad4adfe4b695be8592388990e4630f68e4ced572a0f59"
+        ".agents/skills/heeler-threat-modeling/SKILL.md": "098c7e8185875252c8b232abe54a051b6572345f97a97c0de11434bd1140d6e2"
       },
       "commands": [
         {
@@ -396,7 +396,9 @@
             "--system",
             "--application",
             "--wait",
-            "--timeout"
+            "--timeout",
+            "--show",
+            "--format"
           ]
         },
         {
@@ -434,6 +436,19 @@
             "--status",
             "--format",
             "--quiet"
+          ]
+        },
+        {
+          "path": [
+            "threat-model",
+            "check"
+          ],
+          "flags": [
+            "--path",
+            "--base",
+            "--review",
+            "--system",
+            "--format"
           ]
         },
         {
